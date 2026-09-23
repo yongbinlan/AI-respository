@@ -1,0 +1,6 @@
+interface:
+  display_name: "照片转 PFP · 九套穿搭总览"
+  short_description: "保留原脸形与五官比例，默认同一画风九套穿搭的3×3总览，支持单张与头像"
+  default_prompt: "使用 $photo-to-chibi-pfp，保留我的脸形、五官比例和发型，默认生成同一Pop Mart画风、九套不同穿搭的3×3全身总览。"
+policy:
+  allow_implicit_invocation: true

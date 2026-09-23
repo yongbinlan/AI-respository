@@ -1,0 +1,158 @@
+{
+  "pop_mart": {
+    "label": "Pop Mart / 盲盒潮玩（默认）",
+    "aliases": [
+      "pop mart",
+      "popmart",
+      "泡泡玛特",
+      "盲盒",
+      "盲盒潮玩",
+      "3d chibi"
+    ],
+    "default_background": "dark",
+    "asset": "3D-render-style blind-box chibi collectible / PFP raster image",
+    "design": "Pop Mart-inspired personalized collectible: compact short body and limbs, whole head scaled relative to the body if appropriate, rounded garment construction and simplified sculpted hair surfaces. Keep the subject's internal facial geometry and distinctive hair silhouette; do not force a two-head template, large doll eyes, tiny nose/mouth, baby cheeks or dot eyebrows. No unrequested wardrobe or accessories.",
+    "render": "PVC and soft vinyl, matte surfaces with localized glossy eye/accessory highlights. Refined studio lighting, soft ambient occlusion and grounded contact shadow, Octane/C4D-like render aesthetics. Bright saturated macaron accents and strong but coherent color contrasts; preserve natural skin and hair color.",
+    "avoid": "flat sticker rendering, realistic adult body proportions, uniformly oily plastic, copied branded character or packaging",
+    "identity_note": "Keep the original eye shape and spacing, brows, nose, mouth, jaw and hairline. Borrow the reference's PVC finish, color relationships, garment construction and lighting, not its facial template. Likeness is not established merely by matching hair color and outfit.",
+    "quality_check": "先检查原脸形和眉眼鼻口关系，再检查PVC/搪胶、圆润身体服饰、棚拍和参考配色；不以夸张大眼、豆眉、小鼻口或二头身作为强制合格条件。"
+  },
+  "pixel_art": {
+    "label": "像素风 / Pixel Art",
+    "aliases": [
+      "pixel art",
+      "pixel",
+      "像素风",
+      "像素",
+      "cryptopunks"
+    ],
+    "default_background": "light",
+    "asset": "2D pixel-art PFP raster image",
+    "design": "Retro 8-bit pixel portrait with a 24x24-inspired coarse visual grid, readable chunky silhouette, few carefully chosen colors, crisp square pixel clusters and stepped edges. For full-body use a legible pixel sprite rather than forcing toy proportions.",
+    "render": "Flat discrete color clusters and sparse pixel shading. No smooth gradients or anti-aliased edges. Use the grid as an aesthetic target, not a claim that the generated file is literally 24x24 pixels.",
+    "avoid": "soft vinyl, studio lighting, ambient occlusion, rounded 3D surfaces, smooth vector edges, fine realistic facial detail",
+    "identity_note": "Place pixel clusters to retain the source face outline and relative eye, brow, nose and mouth locations. Coarse grids lose detail: do not claim exact facial proportion preservation or treat hair/clothes alone as proof of likeness. Report resolution limits instead of forcing a stock pixel face.",
+    "quality_check": "清晰阶梯边、有限色板与像素簇；无平滑塑料体积。24×24 若是硬规格，核验实际尺寸和网格，不能把高分辨率像素感冒充原生24×24。"
+  },
+  "flat_2d": {
+    "label": "扁平插画 / Flat 2D",
+    "aliases": [
+      "flat 2d",
+      "flat",
+      "扁平插画",
+      "扁平插画风",
+      "扁平",
+      "doodles"
+    ],
+    "default_background": "light",
+    "asset": "flat 2D illustrated PFP raster image",
+    "design": "Simple clean contours, playful rounded graphic shapes, large solid color areas, distinctive face/hair/eyewear silhouette and balanced negative space.",
+    "render": "Flat diffuse colors with no volumetric shadows. Soft pastel palette; an optional gentle background gradient only, keeping the subject flat and graphic.",
+    "avoid": "PVC, sculpted toy surfaces, physically based rendering, studio rim light, ambient occlusion, dimensional face shading",
+    "identity_note": "Simplify texture and shading into flat shapes while retaining original face outline and internal eye/brow/nose/mouth proportions.",
+    "quality_check": "纯色块和简洁线条占主导，无三维投影或塑料质感；柔和渐变不能把主体变成立体。"
+  },
+  "anime": {
+    "label": "日系动漫 / Anime",
+    "aliases": [
+      "anime",
+      "日系动漫",
+      "日系动漫风",
+      "动漫",
+      "azuki"
+    ],
+    "default_background": "light",
+    "asset": "Japanese anime cel-shaded PFP raster image",
+    "design": "Japanese anime illustration with precise linework, stylized hair surfaces and source-specific facial geometry. Retain original eye size/shape/spacing and facial feature placement rather than applying a generic large-eyed template. Stylize the body independently if requested.",
+    "render": "Cel shading with deliberate hard-edged shadow shapes, clean high-contrast light and rich controlled color; drawn 2D aesthetics.",
+    "avoid": "soft vinyl doll surfaces, physical toy studio rendering, compulsory two-head proportions, copied franchise costume",
+    "identity_note": "Translate rather than replace the subject's facial contour, hairstyle, brow expression and eyewear.",
+    "quality_check": "赛璐珞色块、清楚线稿与动漫眼神；不默认强压二头身，不出现搪胶玩具材质。"
+  },
+  "street_comic": {
+    "label": "美漫街头风",
+    "aliases": [
+      "street comic",
+      "comic",
+      "美漫街头",
+      "美漫街头风",
+      "美漫",
+      "bayc",
+      "无聊猿"
+    ],
+    "default_background": "light",
+    "asset": "hand-inked street-comic human PFP raster image",
+    "design": "Bold hand-drawn ink contours, graphic shapes and urban comic attitude applied to the original human face proportions. Preserve the source expression and eye/nose/mouth relationships; exaggerate expression only when explicitly requested. Streetwear redesign only if requested.",
+    "render": "Graphic flat colors, confident comic shadow blocks and subtle hand-drawn irregularity, restrained punchy palette.",
+    "avoid": "turning the person into an ape or animal, copied collection character, default new streetwear or accessories, soft vinyl render",
+    "identity_note": "Retain the source facial geometry and expression; do not exaggerate or replace it merely because the style is comic.",
+    "quality_check": "粗线、手绘感与街头气质；保留原脸部关系和表情，不默认夸张五官，不因参照BAYC自动变猿或换装。"
+  },
+  "funko_pop": {
+    "label": "Funko Pop 风",
+    "aliases": [
+      "funko",
+      "funko pop",
+      "funko系列",
+      "funko pop风"
+    ],
+    "default_background": "light",
+    "asset": "3D-render-style personalized vinyl collectible PFP raster image",
+    "design": "Funko-inspired vinyl construction and compact body adapted for facial likeness. Preserve the original face outline, eye shape/spacing and nose/mouth relationships instead of replacing them with a square head and identical dots. This is a likeness-first adaptation, not canonical Funko facial geometry.",
+    "render": "Smooth matte vinyl body, restrained eye highlights preserving source eye color, clean product lighting, soft contact shadow and clear material separation.",
+    "avoid": "generic square-head or dot-eye replacement of the original face, star-shaped iris highlights, branded box or copied licensed character",
+    "identity_note": "A strict square-head/black-dot-eye transformation conflicts with preserving the original facial geometry. Default to original facial geometry and disclose the adaptation. If the user explicitly requires canonical Funko geometry as well, resolve that conflict before generation; never silently sacrifice the face.",
+    "quality_check": "原脸形和五官比例优先，检查Funko启发的软胶材质/短身体；明确这是保留人脸的适配版，不把黑豆眼或方头作为默认要求。"
+  },
+  "cyberpunk": {
+    "label": "赛博朋克风",
+    "aliases": [
+      "cyberpunk",
+      "赛博朋克",
+      "赛博朋克风",
+      "赛博"
+    ],
+    "default_background": "dark",
+    "asset": "stylized cyberpunk sci-fi PFP raster image",
+    "design": "Recognizable human portrait in a futuristic visual language, optional peripheral holographic interface motifs and clear character silhouette; no compulsory toy proportions.",
+    "render": "Neon cyan, violet and magenta accents, high-contrast futuristic lighting, subtle metallic or holographic detail. Keep enough neutral light to preserve recognizable skin and hair colors.",
+    "avoid": "automatic facial prosthetics or limb replacement, face-obscuring visor, unreadable neon clutter, forced soft-vinyl toy anatomy",
+    "identity_note": "Style selection authorizes the sci-fi palette and atmosphere; add prosthetics, new armor or clothing only when specifically requested. Do not lose facial identity under neon light.",
+    "quality_check": "蓝紫粉霓虹、科幻/全息气氛与清楚面孔；未经要求不自动安装义体、遮脸或替换原穿搭。"
+  },
+  "minimal_line": {
+    "label": "极简线条风",
+    "aliases": [
+      "minimal line",
+      "minimal",
+      "极简线条",
+      "极简线条风",
+      "极简"
+    ],
+    "default_background": "light",
+    "asset": "minimal geometric line-art PFP raster image",
+    "design": "Reduce the human face and hair to a few intentional geometric curves and clean line shapes, selective recognizable glasses or hairline detail, ample negative space.",
+    "render": "Monochrome-led ink on a plain background, consistent controlled line weight, no filled volumetric shading. Preserve identity through shape, not rendered texture.",
+    "avoid": "large glossy anime eyes, sculpted hair clumps, PVC material, studio light effects, dense detail, colorful accessory clutter",
+    "identity_note": "Trace the subject-specific face outline and relative brow/eye/nose/mouth placement using simplified lines. Omit texture and shading, not the identifying facial arrangement. If the chosen abstraction loses recognizable facial structure, increase useful facial lines rather than returning a generic geometric face.",
+    "quality_check": "几何轮廓、单色主导与留白；细线在96px仍可读，不套用大眼搪胶标准。"
+  },
+  "claymation": {
+    "label": "黏土定格风 / Claymation",
+    "aliases": [
+      "claymation",
+      "clay",
+      "黏土定格",
+      "黏土定格风",
+      "黏土",
+      "粘土"
+    ],
+    "default_background": "light",
+    "asset": "handmade clay stop-motion-look PFP still image",
+    "design": "Hand-modeled plasticine character preserving the original facial proportions. Construct clothing from thick pressed clay sheets with rounded slightly irregular edges, broad thumb-pressed folds, applied patch pockets and flattened pellet buttons. Simplify zippers to incised lines. Build straps from flattened clay ribbons, bags from soft cuboid blobs with thick flaps, handles and shoelaces from thick rolled clay cords, headphones from clay discs. Shoes are softly squashed clay masses with layered pressed soles. Any metal-like prop becomes matte colored/gray clay. Keep selected outfit themes and recognizable silhouettes; change construction, not only surface texture.",
+    "render": "Visible subtle clay fingerprints, tool dents and joining seams on clothing, shoes and props; matte tactile plasticine, warm softly saturated pigments, warm cream miniature-set lighting and gentle ground shadows. Keep face texture restrained so material marks do not read as skin pores, aging or cracked skin.",
+    "avoid": "manufactured PVC sheen, photoreal fabric weave or leather grain, tiny machined zipper teeth, chrome accessories, thin realistic webbing, precise molded sneaker tread, surface-noise-only conversion, excessive dirty cracks, replacing the source face, claims of actual animation from a still image",
+    "identity_note": "Apply handmade surface irregularities while keeping original facial landmarks and relative distances recognizable; do not deform the face into a stock clay character.",
+    "quality_check": "逐格检查衣片厚边、贴片口袋、泥粒扣、粗泥绳鞋带、软厚包袋和简化道具是否可见；不能仅加噪点或换米色背景，仍保留写实布料、皮革、金属件或工业鞋底。脸部和九格身份另行检查。"
+  }
+}

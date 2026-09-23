@@ -1,0 +1,61 @@
+{
+  "photo_path": null,
+  "style_path": null,
+  "style_id": "pop_mart",
+  "source_view": "half_body",
+  "deliverable": "nine_grid",
+  "identity_anchors": [],
+  "visible_outfit": "",
+  "outfit_mode": "series",
+  "outfit_design": "",
+  "background": "auto",
+  "allow_lower_body_design": true,
+  "inferred_design": [],
+  "user_constraints": [],
+  "face_profile": {
+    "face_outline": "",
+    "eyes": "",
+    "brows": "",
+    "nose": "",
+    "mouth": "",
+    "hairline_and_hair": ""
+  },
+  "outfit_variants": [
+    {
+      "name": "",
+      "design": ""
+    },
+    {
+      "name": "",
+      "design": ""
+    },
+    {
+      "name": "",
+      "design": ""
+    },
+    {
+      "name": "",
+      "design": ""
+    },
+    {
+      "name": "",
+      "design": ""
+    },
+    {
+      "name": "",
+      "design": ""
+    },
+    {
+      "name": "",
+      "design": ""
+    },
+    {
+      "name": "",
+      "design": ""
+    },
+    {
+      "name": "",
+      "design": ""
+    }
+  ]
+}
