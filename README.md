@@ -4,7 +4,7 @@
 
 ## 照片转 PFP · 九套穿搭总览
 
-[photo-to-chibi-pfp](skills/photo-to-chibi-pfp/SKILL.md) · v1.4.0
+[photo-to-chibi-pfp](skills/photo-to-chibi-pfp/SKILL.md) · v1.5.0
 
 上传全身照或半身照，生成保留本人脸形、五官比例与发型特征的风格化形象。默认交付一张 **同一人物、同一画风、九套不同穿搭的 3×3 全身总览**，默认画风为 Pop Mart 盲盒潮玩。
 
@@ -40,7 +40,8 @@
 
 ### 辅助脚本与边界
 
-- 辅助脚本依赖 Python 3 与 Pillow；`prepare` 准备提示词和任务，`inspect` 检查真实图片格式与尺寸，`styles` 列出画风。脚本不调用生图服务，也不自动判断人脸相似度。
+- 辅助脚本依赖 Python 3；图片检查另需 [Pillow](skills/photo-to-chibi-pfp/requirements.txt)。`template` 按模式生成空白brief，`prepare` 准备提示词和任务，`inspect` 检查图片格式与尺寸，`styles` 列出画风。菜单和模板无需Pillow，脚本不调用生图服务，也不自动判断人脸相似度。
+- 支持分别传入人物原照、画风材质参考和穿搭方案参考，避免用潮玩衣服的原材质覆盖黏土造型。字段与命令见 [任务接口说明](skills/photo-to-chibi-pfp/references/job-input.md)。
 - 生图使用 Codex 内置 `image_gen`；仓库本身不提供网站、公共 API、后端凭据或服务额度。
 - 半身照片未拍到的下装和鞋子属于设计补全，不冒充原照信息。
 - 九宫格是一张总览，不是九张独立高清图；输出是静态图片，不是三维模型或实际定格动画。
@@ -53,4 +54,4 @@
 python -B skills/photo-to-chibi-pfp/scripts/test_pfp_job.py
 ```
 
-v1.4.0 的 30 项行为测试覆盖九宫格默认、九种画风、明确单张/头像分支、输入校验和不覆盖旧任务等行为。测试使用临时合成图片，只验证任务准备逻辑，不代表图片的相似度或视觉质量已自动通过。
+v1.5.0 的测试覆盖九宫格默认、九种画风、明确单张/头像分支、参考图角色、模式模板、Windows附件路径、缺失依赖的CLI行为和不覆盖旧任务等。测试使用临时合成图片，只验证任务准备逻辑，不代表图片的相似度或视觉质量已自动通过。

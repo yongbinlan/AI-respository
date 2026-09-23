@@ -2,11 +2,16 @@
 """Prepare local chibi jobs and inspect image metadata. No network or generation."""
 import argparse
 import json
+import os
+import re
 import sys
 import warnings
 from pathlib import Path
 
-from PIL import Image, ImageOps
+try:
+    from PIL import Image, ImageOps
+except ImportError:
+    Image = ImageOps = None
 
 
 STYLE_FILE = Path(__file__).resolve().parents[1] / "references" / "styles.json"
@@ -36,8 +41,26 @@ def resolve_style(value):
     raise ValueError(f"Unknown style_id {value!r}; choose one of {list(STYLES)}")
 
 
+def local_path(value):
+    if not isinstance(value, (str, Path)) or not str(value).strip():
+        raise ValueError("Path must be a non-empty string or Path")
+    value = str(value)
+    if os.name == "nt" and re.match(r"^/[A-Za-z]:[/\\]", value):
+        value = value[1:]
+    return Path(value).expanduser()
+
+
 def image_info(value, minimum_side=1):
-    path = Path(value).expanduser()
+    if Image is None:
+        raise ValueError("Image inspection requires Pillow; install the skill's requirements.txt")
+    try:
+        return _image_info(value, minimum_side)
+    except (Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
+        raise ValueError(f"Image exceeds safe decoding limits: {exc}") from exc
+
+
+def _image_info(value, minimum_side):
+    path = local_path(value)
     if not path.is_absolute():
         raise ValueError("Image paths must be absolute")
     path = path.resolve(strict=True)
@@ -76,8 +99,8 @@ def text_list(value, name, minimum=0):
 
 
 def prepare(brief_path, output):
-    brief_path = Path(brief_path).expanduser()
-    output = Path(output).expanduser()
+    brief_path = local_path(brief_path)
+    output = local_path(output)
     if not brief_path.is_absolute() or not output.is_absolute():
         raise ValueError("Brief and output paths must be absolute")
     brief = json.loads(brief_path.read_text(encoding="utf-8-sig"))
@@ -96,9 +119,23 @@ def prepare(brief_path, output):
     photo = image_info(brief["photo_path"], minimum_side=64)
     if photo["all_transparent"]:
         raise ValueError("Subject image is entirely transparent")
-    style = image_info(brief["style_path"]) if brief.get("style_path") else None
+    def reference(field):
+        value = brief.get(field)
+        if value is None:
+            return None
+        if not isinstance(value, str) or not value.strip():
+            raise ValueError(f"{field} must be an absolute image path or null")
+        info = image_info(value, minimum_side=64)
+        if info["all_transparent"]:
+            raise ValueError(f"{field} is entirely transparent")
+        return info
+
+    style = reference("style_path")
+    design = reference("design_path")
     if style and style["path"] == photo["path"]:
         raise ValueError("Subject and style inputs must not be the same file")
+    if design and design["path"] in {photo["path"], style["path"] if style else None}:
+        raise ValueError("Design reference must not be the same file as subject or style")
     for key, allowed in {
         "source_view": {"full_body", "half_body"},
         "deliverable": {"nine_grid", "full_body", "avatar", "both"},
@@ -142,7 +179,10 @@ def prepare(brief_path, output):
             raise ValueError("Nine outfit variants must have distinct names and designs")
     elif brief["outfit_mode"] == "series":
         raise ValueError("outfit_mode series requires nine_grid")
+    if design and brief["outfit_mode"] == "preserve":
+        raise ValueError("design_path requires series or redesign mode; preserve mode uses source clothing")
     normalized = dict(brief, photo_path=photo["path"], style_path=style["path"] if style else None,
+                      design_path=design["path"] if design else None,
                       face_profile=face_profile, identity_priority="face_proportions_first",
                       outfit_variants=variants)
     output = output.resolve()
@@ -155,9 +195,13 @@ def prepare(brief_path, output):
         refs = [{"index": 1, "role": "identity_and_visible_clothing", "path": photo["path"]}]
         if style:
             refs.append({"index": 2, "role": "style_only", "path": style["path"]})
-        roles = "Image 1 is the primary source for facial geometry, natural expression, hair silhouette and visible clothing. It outranks style references for every internal facial proportion."
+        roles = "Image 1 is the primary source for facial geometry, natural expression and hair silhouette. It outranks style references for every internal facial proportion. Its clothing is observed context; the selected outfit mode determines whether to preserve or redesign it."
         if style:
             roles += " Image 2 controls material, finish, compatible body stylization, lighting and presentation only. Do not copy its face, eye size, face outline, fringe, hat or accessories. Adapt its style to image 1's facial geometry."
+        if design:
+            index = len(refs) + 1
+            refs.append({"index": index, "role": "outfit_design_only", "path": design["path"]})
+            roles += f" Image {index} supplies the selected outfit themes, silhouettes, colors, accessories and cell order only. Preserve those themes as detailed in the outfit plan, while rebuilding their construction in the selected style. Do not inherit its face, material or background."
         if dependent:
             roles += " Append the full-body master ONLY AFTER its face and style reviews pass, as the LAST image. It supplies the established character design; the original subject photo remains authoritative for facial geometry."
         framing = (
@@ -194,6 +238,7 @@ def prepare(brief_path, output):
             "Identity protection: " + spec["identity_note"],
             "Composition: " + framing,
             "Background: " + backdrop,
+            "Priority: explicit background and outfit plan govern presentation; style descriptions govern the medium. Do not restore source clothing over an authorized redesign or import a reference backdrop over the selected background.",
             "User constraints: " + ("; ".join(constraints) or "None beyond the current request."),
             "Avoid: generic template face, skin whitening, changed natural hair color, removed glasses, face-obscuring accessories, copied reference character, " + ("extra figures beyond the nine designs, mixed art styles, overlapping cells, " if target == "nine_grid" else "nine-panel grid, extra people, unsolicited accessories, ") + "extra limbs, fused hands, distorted eyewear, floating feet, cropped head/shoes, text, watermark, unintended branding, uncanny photoreal skin pores.",
             "Style-specific avoid: " + spec["avoid"],
@@ -212,13 +257,32 @@ def prepare(brief_path, output):
             "status": "awaiting_master" if dependent else "prepared",
         })
     job = {
-        "schema_version": 4, "status": "prepared", "backend": "built_in_image_gen",
+        "schema_version": 5, "status": "prepared", "backend": "built_in_image_gen",
         "generation_performed": False, "brief": normalized,
-        "input_metadata": {"photo": photo, "style": style}, "tasks": tasks,
+        "input_metadata": {"photo": photo, "style": style, "design": design}, "tasks": tasks,
         "checks": {"input_files": "pass", "visual_identity": "not_checked", "output_visual_quality": "not_checked"},
     }
     (output / "job.json").write_text(json.dumps(job, ensure_ascii=False, indent=2) + "\n", encoding="utf-8")
     return job
+
+
+def create_template(output, style_id=None, deliverable="nine_grid"):
+    output = local_path(output)
+    if not output.is_absolute():
+        raise ValueError("Template output path must be absolute")
+    if deliverable not in {"nine_grid", "full_body", "avatar", "both"}:
+        raise ValueError("Unknown deliverable")
+    brief = json.loads((STYLE_FILE.parent / "brief.example.json").read_text(encoding="utf-8"))
+    brief.update(style_id=resolve_style(style_id), deliverable=deliverable,
+                 outfit_mode="series" if deliverable == "nine_grid" else "preserve")
+    if deliverable != "nine_grid":
+        brief["outfit_variants"] = []
+    if deliverable == "avatar":
+        brief["allow_lower_body_design"] = False
+    with output.open("x", encoding="utf-8") as handle:
+        handle.write(json.dumps(brief, ensure_ascii=False, indent=2) + "\n")
+    return {"status": "template_created", "path": str(output), "generation_performed": False,
+            "next_step": "Inspect the user's images and fill empty observations and designs before prepare."}
 
 
 def main():
@@ -230,15 +294,21 @@ def main():
     inspect = sub.add_parser("inspect", help="Report actual image metadata; does not assess likeness")
     inspect.add_argument("--image", required=True)
     sub.add_parser("styles", help="List the default and eight optional styles")
+    template = sub.add_parser("template", help="Create a mode-specific blank brief; never overwrites")
+    template.add_argument("--out", required=True)
+    template.add_argument("--style", default="pop_mart")
+    template.add_argument("--deliverable", default="nine_grid", choices=["nine_grid", "full_body", "avatar", "both"])
     args = parser.parse_args()
     try:
         if args.command == "styles":
             result = {"default": "pop_mart", "styles": {key: {"label": value["label"], "aliases": value["aliases"]} for key, value in STYLES.items()}}
+        elif args.command == "template":
+            result = create_template(args.out, args.style, args.deliverable)
         else:
             result = prepare(args.brief, args.out) if args.command == "prepare" else image_info(args.image)
         print(json.dumps(result, ensure_ascii=False, indent=2))
         return 0
-    except (OSError, ValueError, TypeError, Image.DecompressionBombError, Image.DecompressionBombWarning) as exc:
+    except (OSError, ValueError, TypeError) as exc:
         print(json.dumps({"status": "blocked", "error": str(exc)}, ensure_ascii=False), file=sys.stderr)
         return 2
 

@@ -1,12 +1,15 @@
 """Local behavioral tests using synthetic files, not portrait-quality tests."""
 import copy
 import json
+import os
+import subprocess
+import sys
 import tempfile
 import unittest
 from pathlib import Path
 
 from PIL import Image
-from pfp_job import FACE_FIELDS, STYLES, image_info, prepare, resolve_style
+from pfp_job import FACE_FIELDS, STYLES, create_template, image_info, prepare, resolve_style
 
 
 class JobTests(unittest.TestCase):
@@ -235,7 +238,7 @@ class JobTests(unittest.TestCase):
         prompt = Path(job["tasks"][0]["prompt_file"]).read_text(encoding="utf-8")
         self.assertIn("Do not copy its face, eye size, face outline, fringe, hat or accessories", prompt)
         self.assertEqual(job["brief"]["identity_priority"], "face_proportions_first")
-        self.assertEqual(job["schema_version"], 4)
+        self.assertEqual(job["schema_version"], 5)
 
     def grid_brief(self):
         brief = copy.deepcopy(self.brief)
@@ -289,6 +292,90 @@ class JobTests(unittest.TestCase):
         brief.update(deliverable="full_body", outfit_mode="series")
         with self.assertRaisesRegex(ValueError, "series requires nine_grid"):
             self.run_job(brief)
+
+    def test_templates_prepare_all_modes_after_observations_are_filled(self):
+        for target in ("nine_grid", "full_body", "avatar", "both"):
+            path = self.root / f"template-{target}.json"
+            create_template(path, "黏土", target)
+            brief = json.loads(path.read_text(encoding="utf-8"))
+            self.assertEqual(brief["style_id"], "claymation")
+            self.assertIsNone(brief["photo_path"])
+            brief.update({k: v for k, v in self.brief.items() if k not in {"deliverable", "outfit_mode", "allow_lower_body_design"}})
+            if target == "nine_grid":
+                brief["outfit_variants"] = self.grid_brief()["outfit_variants"]
+            job = self.run_job(brief, target)
+            self.assertEqual(job["brief"]["deliverable"], target)
+
+    def test_template_refuses_overwrite_and_unknown_style(self):
+        path = self.root / "template.json"
+        create_template(path)
+        before = path.read_bytes()
+        with self.assertRaises(FileExistsError):
+            create_template(path)
+        self.assertEqual(path.read_bytes(), before)
+        with self.assertRaises(ValueError):
+            create_template(self.root / "bad.json", "nonexistent")
+        self.assertFalse((self.root / "bad.json").exists())
+
+    def test_design_reference_roles_with_and_without_style(self):
+        design = self.root / "design.png"
+        style = self.root / "style.png"
+        Image.new("RGB", (128, 128), "green").save(design)
+        Image.new("RGB", (128, 128), "blue").save(style)
+        for include_style in (False, True):
+            brief = self.grid_brief()
+            brief.update(design_path=str(design), style_path=str(style) if include_style else None)
+            task = self.run_job(brief, str(include_style))["tasks"][0]
+            refs = task["input_images"]
+            self.assertEqual(refs[-1]["role"], "outfit_design_only")
+            self.assertEqual(refs[-1]["index"], 3 if include_style else 2)
+            self.assertEqual(refs[-1]["path"], str(design))
+            prompt = Path(task["prompt_file"]).read_text(encoding="utf-8")
+            self.assertIn(f"Image {refs[-1]['index']} supplies the selected outfit themes", prompt)
+
+    def test_reference_paths_reject_invalid_or_invisible_inputs(self):
+        invisible = self.root / "invisible.png"
+        Image.new("RGBA", (128, 128), (0, 0, 0, 0)).save(invisible)
+        for key in ("style_path", "design_path"):
+            for value in (False, [], "", str(invisible)):
+                brief = self.grid_brief()
+                brief[key] = value
+                with self.assertRaises(ValueError):
+                    self.run_job(brief)
+                self.assertFalse((self.root / "run").exists())
+
+    def test_design_reference_cannot_replace_identity_or_conflict_with_preserve(self):
+        brief = self.grid_brief()
+        brief["design_path"] = str(self.photo)
+        with self.assertRaisesRegex(ValueError, "same file"):
+            self.run_job(brief)
+        design = self.root / "design.png"
+        Image.new("RGB", (128, 128), "green").save(design)
+        with self.assertRaisesRegex(ValueError, "requires series or redesign"):
+            self.run_job(dict(self.brief, design_path=str(design)))
+
+    @unittest.skipUnless(os.name == "nt", "Windows attachment syntax")
+    def test_windows_attachment_prefix_is_normalized(self):
+        info = image_info("/" + self.photo.as_posix())
+        self.assertEqual(info["path"], str(self.photo))
+
+    def test_cli_json_error_and_commands_without_pillow(self):
+        script = str(Path(__file__).with_name("pfp_job.py"))
+        # -S excludes site-packages: menu/template should still work without Pillow.
+        menu = subprocess.run([sys.executable, "-S", script, "styles"], capture_output=True, text=True, encoding="utf-8", env=dict(os.environ, PYTHONUTF8="1"))
+        self.assertEqual(menu.returncode, 0, menu.stderr)
+        self.assertEqual(len(json.loads(menu.stdout)["styles"]), 9)
+        missing = subprocess.run([sys.executable, "-S", script, "inspect", "--image", str(self.photo)], capture_output=True, text=True, encoding="utf-8", env=dict(os.environ, PYTHONUTF8="1"))
+        self.assertEqual(missing.returncode, 2)
+        self.assertIn("Pillow", json.loads(missing.stderr)["error"])
+
+    def test_cli_bad_reference_returns_json_without_partial_job(self):
+        path = self.root / "bad-brief.json"
+        path.write_text(json.dumps(dict(self.brief, style_path=[])), encoding="utf-8")
+        result = subprocess.run([sys.executable, "-X", "utf8", "-B", str(Path(__file__).with_name("pfp_job.py")), "prepare", "--brief", str(path), "--out", str(self.root / "run")], capture_output=True, text=True, encoding="utf-8")
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(result.stderr)["status"], "blocked")
+        self.assertFalse((self.root / "run").exists())
 
 
 if __name__ == "__main__":
