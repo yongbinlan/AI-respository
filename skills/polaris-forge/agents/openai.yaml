@@ -1,0 +1,6 @@
+interface:
+  display_name: "北辰·成果引擎 | Polaris Forge"
+  short_description: "先对齐目标并主动补全需求，再验证成果；按需维护老项目，减少重复返工"
+  default_prompt: "使用 $polaris-forge 理解我的目标、提出有依据的完善建议，按任务复杂度执行并检验实际成果；维护已有项目时只修复授权范围内的真实问题。"
+policy:
+  allow_implicit_invocation: true
