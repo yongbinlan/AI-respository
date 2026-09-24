@@ -1,0 +1,328 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laya 本地部署教程｜macOS 版</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:#19212c;font:16px/1.8 system-ui,"Microsoft YaHei",sans-serif}
+main{max-width:960px;margin:32px auto;padding:36px 42px;background:white;border:1px solid #e3e7ec;border-radius:12px}
+h1{font-size:30px;line-height:1.35}h2{font-size:23px;margin-top:42px;border-bottom:1px solid #e7ebf0;padding-bottom:8px}
+h3{font-size:18px}a{color:#165fbc;text-underline-offset:3px}pre{background:#111a27;color:#eef4ff;padding:20px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.7 Consolas,ui-monospace,monospace}
+code{font-family:Consolas,ui-monospace,monospace}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #dbe1e8;padding:10px;text-align:left;vertical-align:top}th{background:#eef3f8}
+blockquote{margin:20px 0;padding:10px 18px;border-left:4px solid #357cc6;background:#eff6ff}li{margin:5px 0}
+@media(max-width:650px){main{margin:0;padding:24px 18px;border:0;border-radius:0}h1{font-size:25px}pre{padding:14px;font-size:12px}}
+@media print{body{background:white}main{margin:0;border:0;padding:0}pre{color:#111;background:#f2f4f6}h2,h3{break-after:avoid}}
+</style><main><h1>Laya 本地部署教程｜macOS 版</h1>
+<p>目标：在 Mac 本地运行 Laya，通过本地 MCP 供 Codex 调用。主线是 Apple Silicon 的 MPS；另附 CPU 和 Intel Mac 兼容性检查。</p>
+<p>版本：v1｜资料核对：2026-09-24<br />
+验证范围：官方资料核对、教程代码静态检查。本次没有 Mac 实机，未执行 macOS 安装、MPS 推理或 Codex 实际调用。</p>
+<h2>先确认你的 Mac</h2>
+<table>
+<thead>
+<tr>
+<th>条件</th>
+<th>路线与边界</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Apple Silicon：M 系列芯片</td>
+<td>原生 arm64 Python，优先尝试 MPS</td>
+</tr>
+<tr>
+<td>Apple Silicon，MPS 不可用</td>
+<td>明确选择 CPU，性能另测</td>
+</tr>
+<tr>
+<td>Intel Mac</td>
+<td>仅做 CPU 兼容性检查；当前依赖可能无可安装的二进制包，不承诺最新版可用</td>
+</tr>
+<tr>
+<td>希望用 CUDA</td>
+<td>不适用本教程；Mac 使用 MPS 或 CPU</td>
+</tr>
+</tbody>
+</table>
+<p>核对时 Apple 安装页列出 Apple Silicon、macOS 14.0+、Python 3.10+ 和 Xcode 命令行工具；这些要求对应该页所述 PyTorch 版本，实际仍以安装版本为准。<a href="https://developer.apple.com/metal/pytorch/">Apple 官方说明</a></p>
+<p>建议优先 16GB 以上统一内存、预留 10GB 以上磁盘。这是余量建议，不是官方最低配置。8GB 机器先用单模型和短输入实测，模型文件大小不能等同推理内存峰值。</p>
+<p>本地 Laya 无需 Jev Key；安装和首次下载需要联网。接入不会把 Codex 主模型变成本地模型。</p>
+<h2>1．准备原生 Python</h2>
+<p>打开“终端”：</p>
+<pre><code class="language-bash">sw_vers
+uname -m
+python3 --version
+python3 -c 'import sys, platform, struct; print(sys.executable); print(platform.machine()); assert sys.version_info &gt;= (3,10); assert struct.calcsize(&quot;P&quot;) == 8'
+</code></pre>
+<ul>
+<li>M 系列预期 arm64。若 Python 显示 x86_64，检查 Rosetta，先换原生终端和 Python。</li>
+<li>Intel 显示 x86_64 正常，使用 CPU 兼容性分支。</li>
+<li>没有合适 Python 时，从 <a href="https://www.python.org/downloads/macos/">Python 官方 macOS 下载页</a>安装原生兼容版本，建议 3.11 或 3.12。重新打开终端后复查，不修改系统解释器。</li>
+</ul>
+<p>检查命令行工具：</p>
+<pre><code class="language-bash">xcode-select -p
+</code></pre>
+<p>没有安装时再执行：</p>
+<pre><code class="language-bash">xcode-select --install
+</code></pre>
+<p>安装完成再继续。已有 Homebrew 的读者也可使用自己维护的原生 Python，本教程不要求额外安装 Homebrew。</p>
+<h2>2．创建独立环境</h2>
+<p>在当前用户主目录创建 Laya 文件夹。其他电脑的真实用户名无法预知，因此由系统解析并打印完整路径，不照抄虚构的 /Users/用户名 路径。</p>
+<p>在同一个终端逐块执行；任何一步报错就停止，不继续下一块。</p>
+<pre><code class="language-bash">layaRoot=&quot;$HOME/Laya&quot;
+if [ -e &quot;$layaRoot&quot; ]; then
+  printf '目录已存在，请先检查旧部署或修改目录：%s\n' &quot;$layaRoot&quot;
+else
+  mkdir -p &quot;$layaRoot&quot;
+  python3 -m venv &quot;$layaRoot/.venv&quot;
+fi
+</code></pre>
+<p>目录原先存在时，不继续使用未知环境；改用新版本目录，重跑本节。</p>
+<pre><code class="language-bash">layaPython=&quot;$layaRoot/.venv/bin/python&quot;
+&quot;$layaPython&quot; -m pip install --upgrade pip
+printf '部署目录：%s\n专用 Python：%s\n' &quot;$layaRoot&quot; &quot;$layaPython&quot;
+</code></pre>
+<p>无需激活环境，不使用 sudo pip。新开终端需要恢复这些变量和下文环境变量。</p>
+<h2>3．安装 PyTorch 和 Laya</h2>
+<h3>A．Apple Silicon</h3>
+<pre><code class="language-bash">&quot;$layaPython&quot; -m pip install torch
+&quot;$layaPython&quot; -m pip install 'laya[mcp,serve]'
+&quot;$layaPython&quot; -m pip check
+&quot;$layaPython&quot; -I -c 'import laya; import laya.mcp.server; from importlib.metadata import version; print(&quot;laya&quot;, version(&quot;laya&quot;))'
+</code></pre>
+<p>每行成功再执行下一行。首次不使用 nightly、编译加速、TileLang 或转换权重，先确认普通推理。</p>
+<p>尝试 MPS 并运行真实张量运算：</p>
+<pre><code class="language-bash">export LAYA_DEVICE=mps
+&quot;$layaPython&quot; -c 'import torch; print(torch.__version__); print(&quot;built:&quot;, torch.backends.mps.is_built()); print(&quot;available:&quot;, torch.backends.mps.is_available()); assert torch.backends.mps.is_available(), &quot;MPS unavailable&quot;; print(torch.ones(1, device=&quot;mps&quot;))'
+</code></pre>
+<p>失败时先查系统版本、Python 架构和 PyTorch。决定先用 CPU 时明确执行：</p>
+<pre><code class="language-bash">export LAYA_DEVICE=cpu
+&quot;$layaPython&quot; -c 'import torch; print(torch.__version__); print(torch.ones(1))'
+</code></pre>
+<p>这属于 CPU 部署，不能标记为 MPS 成功。</p>
+<h3>B．Intel Mac：先检验依赖</h3>
+<p>此分支替代 Apple Silicon 安装分支。使用新虚拟环境，预检：</p>
+<pre><code class="language-bash">&quot;$layaPython&quot; -m pip install --dry-run --only-binary=:all: 'laya[mcp,serve]'
+</code></pre>
+<p>No matching distribution 或依赖无法解析时，到这里停止。当前 Python/macOS/架构没有通过本路线兼容性检查；不要随意降级到很旧的 PyTorch，也不要称为部署成功。</p>
+<p>仅预检成功后尝试：</p>
+<pre><code class="language-bash">&quot;$layaPython&quot; -m pip install --only-binary=:all: 'laya[mcp,serve]'
+&quot;$layaPython&quot; -m pip check
+&quot;$layaPython&quot; -I -c 'import torch, laya; import laya.mcp.server; print(torch.__version__); print(torch.ones(1))'
+export LAYA_DEVICE=cpu
+</code></pre>
+<p>依赖可解析不证明模型能运行。仍需通过后续真实推理。若不兼容，另行评估其他本地运行时或设备；不算本教程路线成功。</p>
+<h2>4．设置缓存并保存版本</h2>
+<pre><code class="language-bash">export LAYA_ROOT=&quot;$layaRoot&quot;
+export HF_HOME=&quot;$layaRoot/model-cache&quot;
+export USE_TF=0
+export PYTHONUTF8=1
+unset PYTORCH_ENABLE_MPS_FALLBACK
+&quot;$layaPython&quot; -m pip freeze &gt; &quot;$layaRoot/requirements-$(date +%Y%m%d-%H%M%S).txt&quot;
+</code></pre>
+<p>默认不启用 MPS 算子级 CPU 回退，避免隐藏执行设备；仍需检查模型自己的回退。</p>
+<p>核对时作者主分支标为 0.3.17，但源码、PyPI 和权重版本不同。保存实际环境，不宣称未测试组合稳定。<a href="https://pypi.org/project/laya/">包信息</a></p>
+<h2>5．下载模型并测试真实推理</h2>
+<p>以下整块命令写入测试脚本，只请求多语言 checkpoint。首次需联网下载。</p>
+<pre><code class="language-bash">cat &gt; &quot;$layaRoot/smoke_test.py&quot; &lt;&lt;'PY'
+import json
+import os
+import time
+from importlib.metadata import version
+from pathlib import Path
+import laya
+import torch
+
+requested = os.environ[&quot;LAYA_DEVICE&quot;]
+if requested == &quot;cuda&quot; and not torch.cuda.is_available():
+    raise SystemExit(&quot;CUDA unavailable; stop and fix the GPU environment.&quot;)
+if requested == &quot;mps&quot; and not torch.backends.mps.is_available():
+    raise SystemExit(&quot;MPS unavailable; stop or explicitly choose CPU.&quot;)
+agent = laya.load(
+    &quot;convaiinnovations/laya&quot;, subfolder=&quot;multilingual&quot;, device=requested,
+)
+questions = {
+    &quot;category&quot;: {
+        &quot;type&quot;: &quot;choice&quot;,
+        &quot;instructions&quot;: &quot;根据客户留言选择最合适的服务类别。&quot;,
+        &quot;criteria&quot;: {
+            &quot;presales&quot;: &quot;购买前咨询价格、规格或库存&quot;,
+            &quot;aftersales&quot;: &quot;已收货后的故障、退货或退款&quot;,
+            &quot;other&quot;: &quot;与购买及售后无关&quot;,
+        },
+    },
+    &quot;refund&quot;: {&quot;type&quot;: &quot;noul&quot;, &quot;instructions&quot;: &quot;客户明确要求退款。&quot;},
+}
+cases = [
+    (&quot;收到的商品无法开机，我要求退货退款。&quot;, &quot;aftersales&quot;),
+    (&quot;还没下单，请问这款有哪些颜色？&quot;, &quot;presales&quot;),
+    (&quot;祝你周末愉快。&quot;, &quot;other&quot;),
+]
+rows = []
+for text, expected in cases:
+    if requested == &quot;cuda&quot;:
+        torch.cuda.synchronize()
+    elif requested == &quot;mps&quot;:
+        torch.mps.synchronize()
+    start = time.perf_counter()
+    result = agent.predict({&quot;text&quot;: text}, questions)
+    if requested == &quot;cuda&quot;:
+        torch.cuda.synchronize()
+    elif requested == &quot;mps&quot;:
+        torch.mps.synchronize()
+    elapsed_ms = round((time.perf_counter() - start) * 1000, 2)
+    actual = agent.device.type
+    if actual != requested:
+        raise RuntimeError(f&quot;Device changed: requested={requested}, actual={actual}&quot;)
+    answers = result[&quot;answers&quot;]
+    selected = answers[&quot;category&quot;][&quot;choice&quot;]
+    assert selected in questions[&quot;category&quot;][&quot;criteria&quot;]
+    probabilities = answers[&quot;category&quot;][&quot;probabilities&quot;]
+    assert set(probabilities) == set(questions[&quot;category&quot;][&quot;criteria&quot;])
+    assert all(0 &lt;= p &lt;= 1 for p in probabilities.values())
+    assert abs(sum(probabilities.values()) - 1) &lt; 0.01
+    assert 0 &lt;= answers[&quot;refund&quot;][&quot;noul&quot;] &lt;= 1
+    rows.append({
+        &quot;text&quot;: text, &quot;expected&quot;: expected, &quot;choice&quot;: selected,
+        &quot;matches_expected&quot;: selected == expected,
+        &quot;actual_device&quot;: actual, &quot;elapsed_ms&quot;: elapsed_ms, &quot;answers&quot;: answers,
+    })
+report = {
+    &quot;laya_version&quot;: version(&quot;laya&quot;), &quot;torch_version&quot;: torch.__version__,
+    &quot;requested_device&quot;: requested, &quot;actual_device&quot;: agent.device.type,
+    &quot;sample_matches&quot;: sum(row[&quot;matches_expected&quot;] for row in rows),
+    &quot;sample_count&quot;: len(rows), &quot;results&quot;: rows,
+    &quot;note&quot;: &quot;Three smoke cases are not a production accuracy benchmark.&quot;,
+}
+output = Path(os.environ[&quot;LAYA_ROOT&quot;]) / f&quot;smoke-{time.time_ns()}.json&quot;
+output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding=&quot;utf-8&quot;)
+print(json.dumps(report, ensure_ascii=False, indent=2))
+print(&quot;Saved:&quot;, output.resolve())
+PY
+&quot;$layaPython&quot; &quot;$layaRoot/smoke_test.py&quot;
+</code></pre>
+<p>检查结果：</p>
+<ul>
+<li>actual_device 与 requested_device 一致；请求 MPS/CUDA 却退回 CPU 会报错。</li>
+<li>三个场景都有分类、合法概率和耗时，并保存带时间编号的 JSON 报告。</li>
+<li>sample_matches 不是 3 时，先检查基础误判和模型选择。</li>
+<li>三个例子不是准确率基准；首条请求也可能含预热。输出耗时不含模型加载，不代表 Codex 端到端延迟。</li>
+</ul>
+<p>MPS=True 只说明后端可用，不能证明模型实际在 GPU 上运行。<a href="https://github.com/NandhaKishorM/laya/blob/main/laya/agent.py">Laya 设备逻辑</a></p>
+<h2>6．接入 Codex</h2>
+<pre><code class="language-bash">codex --version
+codex mcp list
+</code></pre>
+<p>找不到命令时，按 <a href="https://developers.openai.com/codex/cli/">Codex CLI 官方说明</a>安装或配置命令行入口。不要假设桌面安装一定已配置终端 PATH。</p>
+<p>以下会新增持久 MCP 配置。已有 laya 时先运行 codex mcp get laya 查看并保留旧配置，不重复添加。</p>
+<p>备份实际配置，读取 CODEX_HOME 但不修改它：</p>
+<pre><code class="language-bash">if [ -n &quot;$CODEX_HOME&quot; ]; then
+  layaCodexDir=&quot;$CODEX_HOME&quot;
+else
+  layaCodexDir=&quot;$HOME/.codex&quot;
+fi
+layaCodexConfig=&quot;$layaCodexDir/config.toml&quot;
+if [ -f &quot;$layaCodexConfig&quot; ]; then
+  cp &quot;$layaCodexConfig&quot; &quot;$layaCodexConfig.before-laya-$(date +%Y%m%d-%H%M%S).bak&quot;
+fi
+printf '配置位置：%s\n' &quot;$layaCodexConfig&quot;
+</code></pre>
+<p>确认没有同名服务后注册：</p>
+<pre><code class="language-bash">codex mcp add laya \
+  --env &quot;LAYA_DEVICE=$LAYA_DEVICE&quot; \
+  --env &quot;HF_HOME=$HF_HOME&quot; \
+  --env LAYA_PRELOAD=0 \
+  --env LAYA_MODELS=multilingual \
+  --env USE_TF=0 \
+  --env PYTHONUTF8=1 \
+  --env PYTORCH_ENABLE_MPS_FALLBACK=0 \
+  -- &quot;$layaPython&quot; -m laya.mcp.server
+codex mcp get laya
+</code></pre>
+<p>使用已验证的 mps 或 cpu 和绝对解释器路径，不依赖终端激活状态。LAYA_MODELS 只是预加载集合，不是模型白名单。LAYA_PRELOAD=0 将加载推迟到首次调用。</p>
+<p>重新加载 MCP 或重新打开 Codex，在新任务输入：</p>
+<blockquote>
+<p>调用 laya_status，再用 laya_predict、model=multilingual 判断“商品不能开机，我要退款”属于售前、售后还是其他。调用后检查实际设备，报告结果和耗时。不要用 laya_route 代替推理，不自行改用云端服务。</p>
+</blockquote>
+<p>工具加载超时时，在实际配置文件已有 [mcp_servers.laya] 表内、command 和 args 同级添加以下建议值，不放入 env 子表，不创建重复表：</p>
+<pre><code class="language-toml">startup_timeout_sec = 60
+tool_timeout_sec = 180
+</code></pre>
+<p>先完成第 5 步模型下载，再处理超时。<a href="https://developers.openai.com/codex/mcp">Codex MCP 文档</a></p>
+<h2>7．可选：本机 HTTP 接口</h2>
+<p>仅其他软件需要 HTTP 时使用，与 MCP 同时运行可能重复加载模型。原终端执行：</p>
+<pre><code class="language-bash">export LAYA_HOST=127.0.0.1
+export LAYA_PORT=8000
+export LAYA_PRELOAD=1
+export LAYA_MODELS=multilingual
+&quot;$layaPython&quot; -m laya.serve
+</code></pre>
+<p>另开终端：</p>
+<pre><code class="language-bash">curl --fail-with-body http://127.0.0.1:8000/health
+curl --fail-with-body http://127.0.0.1:8000/v1/systemone \
+  -H 'Content-Type: application/json' \
+  -d '{&quot;model&quot;:&quot;multilingual&quot;,&quot;state&quot;:{&quot;text&quot;:&quot;商品坏了，我要退款。&quot;},&quot;questions&quot;:{&quot;refund&quot;:{&quot;type&quot;:&quot;noul&quot;,&quot;instructions&quot;:&quot;客户明确要求退款。&quot;}}}'
+</code></pre>
+<p>旧 curl 不支持 --fail-with-body 时改用 -f。健康响应不证明推理成功；health 的 device 可能只是配置偏好。/v1/systemone 不是 MCP URL。Ctrl+C 停服务。<a href="https://github.com/NandhaKishorM/laya/blob/main/laya/serve.py">HTTP 实现</a></p>
+<h2>8．离线与隐私边界</h2>
+<p>完成下载后，在同一环境设置并重跑：</p>
+<pre><code class="language-bash">export HF_HUB_OFFLINE=1
+export TRANSFORMERS_OFFLINE=1
+&quot;$layaPython&quot; &quot;$layaRoot/smoke_test.py&quot;
+</code></pre>
+<p>这检查当前 checkpoint 的缓存推理，不证明整个系统绝无网络活动。MCP 若要同样限制，将两个变量加入持久 env；请求未缓存模型仍可能失败。</p>
+<p>本地 Laya 无需向 Jev 上传状态，但 Codex 主模型仍按其服务方式处理消息。不能把此方案描述成“Codex 全离线”。</p>
+<h2>9．故障排查与维护</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>下一步</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>M 系列 Python 显示 x86_64</td>
+<td>换原生 arm64 终端和 Python，新建环境，不混架构。</td>
+</tr>
+<tr>
+<td>MPS 不可用</td>
+<td>查系统和 PyTorch；明确改 CPU 时同步改 MCP 配置。</td>
+</tr>
+<tr>
+<td>unsupported autocast / 算子错误</td>
+<td>留存报错，在新环境核对受支持版本组合，或明确改 CPU。</td>
+</tr>
+<tr>
+<td>Intel 无 torch wheel</td>
+<td>本路线阻塞，不保证降级可行；另评估运行时。</td>
+</tr>
+<tr>
+<td>下载或 TLS 失败</td>
+<td>查网络、时间和证书，不关闭证书验证或悄悄更换来源。</td>
+</tr>
+<tr>
+<td>内存压力大</td>
+<td>停重复实例，缩短输入，不预加载全部模型。</td>
+</tr>
+<tr>
+<td>有工具名但无结果</td>
+<td>查模型加载和工具超时；laya_route 不执行判断模型前向推理。</td>
+</tr>
+<tr>
+<td>中文不可靠</td>
+<td>用 multilingual、清晰少量选项和独立样本；置信度不是正确保证。</td>
+</tr>
+</tbody>
+</table>
+<p>停用：</p>
+<pre><code class="language-bash">codex mcp remove laya
+</code></pre>
+<p>重新加载 MCP；若进程仍驻留，正常退出启动它的 Codex 会话。移除注册不会删除模型；也可在已有服务表设置 enabled=false。</p>
+<p>升级前保留版本清单，在新目录测试后切换。删除前人工确认完整路径和内容，本教程不提供递归删除命令，不设置开机启动，不开放局域网端口。</p>
+<h2>10．验收与来源</h2>
+<p>分层确认：依赖可导入 → 真实推理及设备正确 → Codex 工具调用成功 → 业务样本达标。前三层不自动证明第四层。</p>
+<ul>
+<li><a href="https://github.com/NandhaKishorM/laya">Laya 作者仓库</a></li>
+<li><a href="https://pypi.org/project/laya/">PyPI</a></li>
+<li><a href="https://huggingface.co/convaiinnovations/laya-multilingual">多语言模型卡</a></li>
+<li><a href="https://developer.apple.com/metal/pytorch/">Apple PyTorch/MPS 要求</a></li>
+<li><a href="https://github.com/NandhaKishorM/laya/blob/main/laya/mcp/server.py">MCP 源码</a></li>
+<li><a href="https://developers.openai.com/codex/mcp">Codex MCP</a></li>
+</ul>
+<p>运行时验证尚未完成：请在目标 Mac 按本文验收步骤实测。</p>
+</main></html>

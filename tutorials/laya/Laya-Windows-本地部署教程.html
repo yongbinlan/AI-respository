@@ -1,0 +1,324 @@
+<!doctype html><html lang="zh-CN"><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><title>Laya 本地部署教程｜Windows 版</title><style>
+*{box-sizing:border-box}body{margin:0;background:#f4f5f7;color:#19212c;font:16px/1.8 system-ui,"Microsoft YaHei",sans-serif}
+main{max-width:960px;margin:32px auto;padding:36px 42px;background:white;border:1px solid #e3e7ec;border-radius:12px}
+h1{font-size:30px;line-height:1.35}h2{font-size:23px;margin-top:42px;border-bottom:1px solid #e7ebf0;padding-bottom:8px}
+h3{font-size:18px}a{color:#165fbc;text-underline-offset:3px}pre{background:#111a27;color:#eef4ff;padding:20px;border-radius:8px;white-space:pre-wrap;overflow-wrap:anywhere;font:13px/1.7 Consolas,ui-monospace,monospace}
+code{font-family:Consolas,ui-monospace,monospace}table{border-collapse:collapse;width:100%;font-size:14px}th,td{border:1px solid #dbe1e8;padding:10px;text-align:left;vertical-align:top}th{background:#eef3f8}
+blockquote{margin:20px 0;padding:10px 18px;border-left:4px solid #357cc6;background:#eff6ff}li{margin:5px 0}
+@media(max-width:650px){main{margin:0;padding:24px 18px;border:0;border-radius:0}h1{font-size:25px}pre{padding:14px;font-size:12px}}
+@media print{body{background:white}main{margin:0;border:0;padding:0}pre{color:#111;background:#f2f4f6}h2,h3{break-after:avoid}}
+</style><main><h1>Laya 本地部署教程｜Windows 版</h1>
+<p>目标：在 Windows 电脑本地运行 Laya，并让 Codex 按需调用分类和判断工具。</p>
+<p>版本：v1｜资料核对：2026-09-24<br />
+验证范围：官方资料核对、教程代码静态检查；本次未安装 Laya、未下载权重、未完成 Windows 推理实测。</p>
+<h2>先选路线</h2>
+<table>
+<thead>
+<tr>
+<th>电脑条件</th>
+<th>本文路线</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>Windows 10/11、NVIDIA 显卡与可用驱动</td>
+<td>CUDA</td>
+</tr>
+<tr>
+<td>无 NVIDIA 显卡，或主动选择 CPU</td>
+<td>CPU</td>
+</tr>
+<tr>
+<td>其他显卡加速方案</td>
+<td>不在本教程验证范围内，先选择 CPU</td>
+</tr>
+</tbody>
+</table>
+<p>建议为依赖和缓存留出 10GB 以上磁盘、优先 16GB 以上内存；这是余量建议，不是官方最低配置。</p>
+<p>安装阶段需要访问 PyPI、PyTorch 下载站和 Hugging Face。本地 Laya 推理不需要 Jev Key。默认先使用中文多语言模型，完成小样本检查后再接 Codex。</p>
+<p>完成标志：真实模型推理通过、实际设备正确、Codex 真正调用 laya_predict。导入成功或工具列表出现名称都不能替代这些检查。</p>
+<h2>1．准备 Python 和独立目录</h2>
+<p>打开普通 PowerShell，每个步骤成功后再继续。无需激活虚拟环境或修改执行策略。</p>
+<pre><code class="language-powershell">python --version
+py --list
+Get-Command python, py -ErrorAction SilentlyContinue
+</code></pre>
+<p>没有可用的 64 位 Python 时，从 <a href="https://www.python.org/downloads/windows/">Python 官方 Windows 下载页</a>安装。建议 Python 3.11 或 3.12；Laya 要求至少 3.10，依赖也必须兼容。<a href="https://pypi.org/project/laya/">包信息</a></p>
+<p>下面以 Python 3.11 为例；若装的是 3.12，将第一行版本改为 3.12。</p>
+<pre><code class="language-powershell">$basePython = (&amp; py -3.11 -c &quot;import sys; print(sys.executable)&quot;).Trim()
+if ($LASTEXITCODE -ne 0 -or -not (Test-Path -LiteralPath $basePython)) {
+    throw '先解决 Python 解释器问题。'
+}
+&amp; $basePython -c &quot;import sys, struct; print(sys.executable); print(sys.version); assert sys.version_info &gt;= (3,10); assert struct.calcsize('P') == 8&quot;
+if ($LASTEXITCODE -ne 0) { throw '需要 Python 3.10+、64 位解释器。' }
+</code></pre>
+<p>如果 py 启动器不可用，但 python 可运行，改用下面命令取得真实路径，再做版本检查：</p>
+<pre><code class="language-powershell">$basePython = (&amp; python -c &quot;import sys; print(sys.executable)&quot;).Trim()
+&amp; $basePython -c &quot;import sys, struct; print(sys.executable); print(sys.version); assert sys.version_info &gt;= (3,10); assert struct.calcsize('P') == 8&quot;
+</code></pre>
+<p>不要把 WindowsApps 中不能执行的别名当作真实解释器。两种命令都失败时，修复官方 Python 安装。</p>
+<p>以下创建新部署目录：有 E 盘时使用 E:\Codex\Laya；没有 E 盘时从当前用户目录生成完整路径。这是待创建的目标，不表示已经存在。</p>
+<pre><code class="language-powershell">$ErrorActionPreference = 'Stop'
+$layaRoot = if (Test-Path -LiteralPath 'E:\') {
+    'E:\Codex\Laya'
+} else {
+    Join-Path $env:USERPROFILE 'Laya'
+}
+if (Test-Path -LiteralPath $layaRoot) {
+    throw &quot;目录已存在：$layaRoot。先检查旧部署，或改用新的版本目录。&quot;
+}
+New-Item -ItemType Directory -Path $layaRoot | Out-Null
+&amp; $basePython -m venv (Join-Path $layaRoot '.venv')
+if ($LASTEXITCODE -ne 0) { throw '创建虚拟环境失败。' }
+$layaPython = Join-Path $layaRoot '.venv\Scripts\python.exe'
+&amp; $layaPython -m pip install --upgrade pip
+if ($LASTEXITCODE -ne 0) { throw 'pip 更新失败。' }
+Write-Host &quot;部署目录：$layaRoot&quot;
+Write-Host &quot;专用 Python：$layaPython&quot;
+</code></pre>
+<p>后续在同一个 PowerShell 窗口执行。新开窗口时，重新设置 layaRoot、layaPython 和环境变量。</p>
+<h2>2．安装 PyTorch：只选一条路线</h2>
+<h3>A．NVIDIA CUDA</h3>
+<p>先运行 nvidia-smi，确认显卡和驱动可识别：</p>
+<pre><code class="language-powershell">nvidia-smi
+</code></pre>
+<p>打开 <a href="https://pytorch.org/get-started/locally/">PyTorch 安装选择器</a>，选 Windows / Pip / Python / 与驱动兼容的 CUDA 构建。下面给出 CUDA 12.8 源的示例；若选择器要求其他构建，按官方结果调整下载源。</p>
+<pre><code class="language-powershell">&amp; $layaPython -m pip install torch --index-url https://download.pytorch.org/whl/cu128
+if ($LASTEXITCODE -ne 0) { throw 'CUDA PyTorch 安装失败。' }
+$env:LAYA_DEVICE = 'cuda'
+&amp; $layaPython -c &quot;import torch; print(torch.__version__, torch.version.cuda); assert torch.cuda.is_available(), 'CUDA unavailable'; print(torch.cuda.get_device_name(0)); print(torch.ones(1, device='cuda'))&quot;
+if ($LASTEXITCODE -ne 0) { throw 'GPU 张量运算失败，不继续。' }
+</code></pre>
+<p>使用预编译 PyTorch 包通常不需要单独安装完整 CUDA Toolkit。也不默认安装 nightly。</p>
+<h3>B．CPU</h3>
+<pre><code class="language-powershell">&amp; $layaPython -m pip install torch --index-url https://download.pytorch.org/whl/cpu
+if ($LASTEXITCODE -ne 0) { throw 'CPU PyTorch 安装失败。' }
+$env:LAYA_DEVICE = 'cpu'
+&amp; $layaPython -c &quot;import torch; print(torch.__version__); print(torch.ones(1))&quot;
+if ($LASTEXITCODE -ne 0) { throw 'CPU 运算失败。' }
+</code></pre>
+<p>CPU 路线用于本地功能验证，不承诺达到作者的 GPU 延迟。</p>
+<h2>3．安装 Laya 和扩展</h2>
+<pre><code class="language-powershell">&amp; $layaPython -m pip install 'laya[mcp,serve]'
+if ($LASTEXITCODE -ne 0) { throw 'Laya 安装失败。' }
+&amp; $layaPython -m pip check
+if ($LASTEXITCODE -ne 0) { throw '先修复依赖冲突。' }
+&amp; $layaPython -I -c &quot;from importlib.metadata import version; import laya; import laya.mcp.server; print('laya', version('laya'))&quot;
+if ($LASTEXITCODE -ne 0) { throw 'Laya/MCP 导入失败。' }
+
+$env:LAYA_ROOT = $layaRoot
+$env:HF_HOME = Join-Path $layaRoot 'model-cache'
+$env:USE_TF = '0'
+$env:PYTHONUTF8 = '1'
+$env:HF_HUB_DISABLE_SYMLINKS = '1'
+$env:HF_HUB_DISABLE_SYMLINKS_WARNING = '1'
+$lockFile = Join-Path $layaRoot (&quot;requirements-&quot; + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.txt')
+&amp; $layaPython -m pip freeze | Set-Content -LiteralPath $lockFile -Encoding UTF8
+</code></pre>
+<p>安装扩展不代表服务已运行。主线只启用 MCP，HTTP 是后文可选项。<a href="https://github.com/NandhaKishorM/laya/blob/main/pyproject.toml">依赖声明</a></p>
+<p>核对时作者主分支标为 0.3.17；PyPI 发布版、主分支和权重是不同对象。以实际输出及版本清单为准，不把未安装的版本写成已验证组合。</p>
+<h2>4．下载模型并做真实推理</h2>
+<p>以下整块代码会创建测试文件，再执行。只请求多语言 checkpoint；首次运行需要下载。结果中的耗时不含模型初始化，不是 Codex 端到端延迟。</p>
+<pre><code class="language-powershell">@'
+import json
+import os
+import time
+from importlib.metadata import version
+from pathlib import Path
+import laya
+import torch
+
+requested = os.environ[&quot;LAYA_DEVICE&quot;]
+if requested == &quot;cuda&quot; and not torch.cuda.is_available():
+    raise SystemExit(&quot;CUDA unavailable; stop and fix the GPU environment.&quot;)
+if requested == &quot;mps&quot; and not torch.backends.mps.is_available():
+    raise SystemExit(&quot;MPS unavailable; stop or explicitly choose CPU.&quot;)
+agent = laya.load(
+    &quot;convaiinnovations/laya&quot;, subfolder=&quot;multilingual&quot;, device=requested,
+)
+questions = {
+    &quot;category&quot;: {
+        &quot;type&quot;: &quot;choice&quot;,
+        &quot;instructions&quot;: &quot;根据客户留言选择最合适的服务类别。&quot;,
+        &quot;criteria&quot;: {
+            &quot;presales&quot;: &quot;购买前咨询价格、规格或库存&quot;,
+            &quot;aftersales&quot;: &quot;已收货后的故障、退货或退款&quot;,
+            &quot;other&quot;: &quot;与购买及售后无关&quot;,
+        },
+    },
+    &quot;refund&quot;: {&quot;type&quot;: &quot;noul&quot;, &quot;instructions&quot;: &quot;客户明确要求退款。&quot;},
+}
+cases = [
+    (&quot;收到的商品无法开机，我要求退货退款。&quot;, &quot;aftersales&quot;),
+    (&quot;还没下单，请问这款有哪些颜色？&quot;, &quot;presales&quot;),
+    (&quot;祝你周末愉快。&quot;, &quot;other&quot;),
+]
+rows = []
+for text, expected in cases:
+    if requested == &quot;cuda&quot;:
+        torch.cuda.synchronize()
+    elif requested == &quot;mps&quot;:
+        torch.mps.synchronize()
+    start = time.perf_counter()
+    result = agent.predict({&quot;text&quot;: text}, questions)
+    if requested == &quot;cuda&quot;:
+        torch.cuda.synchronize()
+    elif requested == &quot;mps&quot;:
+        torch.mps.synchronize()
+    elapsed_ms = round((time.perf_counter() - start) * 1000, 2)
+    actual = agent.device.type
+    if actual != requested:
+        raise RuntimeError(f&quot;Device changed: requested={requested}, actual={actual}&quot;)
+    answers = result[&quot;answers&quot;]
+    selected = answers[&quot;category&quot;][&quot;choice&quot;]
+    assert selected in questions[&quot;category&quot;][&quot;criteria&quot;]
+    probabilities = answers[&quot;category&quot;][&quot;probabilities&quot;]
+    assert set(probabilities) == set(questions[&quot;category&quot;][&quot;criteria&quot;])
+    assert all(0 &lt;= p &lt;= 1 for p in probabilities.values())
+    assert abs(sum(probabilities.values()) - 1) &lt; 0.01
+    assert 0 &lt;= answers[&quot;refund&quot;][&quot;noul&quot;] &lt;= 1
+    rows.append({
+        &quot;text&quot;: text, &quot;expected&quot;: expected, &quot;choice&quot;: selected,
+        &quot;matches_expected&quot;: selected == expected,
+        &quot;actual_device&quot;: actual, &quot;elapsed_ms&quot;: elapsed_ms, &quot;answers&quot;: answers,
+    })
+report = {
+    &quot;laya_version&quot;: version(&quot;laya&quot;), &quot;torch_version&quot;: torch.__version__,
+    &quot;requested_device&quot;: requested, &quot;actual_device&quot;: agent.device.type,
+    &quot;sample_matches&quot;: sum(row[&quot;matches_expected&quot;] for row in rows),
+    &quot;sample_count&quot;: len(rows), &quot;results&quot;: rows,
+    &quot;note&quot;: &quot;Three smoke cases are not a production accuracy benchmark.&quot;,
+}
+output = Path(os.environ[&quot;LAYA_ROOT&quot;]) / f&quot;smoke-{time.time_ns()}.json&quot;
+output.write_text(json.dumps(report, ensure_ascii=False, indent=2), encoding=&quot;utf-8&quot;)
+print(json.dumps(report, ensure_ascii=False, indent=2))
+print(&quot;Saved:&quot;, output.resolve())
+'@ | Set-Content -LiteralPath (Join-Path $layaRoot 'smoke_test.py') -Encoding UTF8
+&amp; $layaPython (Join-Path $layaRoot 'smoke_test.py')
+if ($LASTEXITCODE -ne 0) { throw '真实推理失败，不继续注册 MCP。' }
+</code></pre>
+<p>成功信号：</p>
+<ul>
+<li>requested_device 与 actual_device 一致；请求 GPU 却退回 CPU 时，本测试报错。</li>
+<li>返回三个场景、合法分类及概率，并保存带时间编号的 JSON 报告。</li>
+<li>检查 sample_matches；若不是 3，先检查基础误判，再考虑业务使用。</li>
+<li>三个样例全对也不是准确率评测，只是小样本检查。</li>
+</ul>
+<p>Laya 存在设备回退逻辑，因此要读实际模型设备，不能只看 CUDA=True。<a href="https://github.com/NandhaKishorM/laya/blob/main/laya/agent.py">设备实现</a></p>
+<h2>5．接入 Codex 本地 MCP</h2>
+<pre><code class="language-powershell">codex --version
+codex mcp list
+</code></pre>
+<p>找不到 codex 时，按 <a href="https://developers.openai.com/codex/cli/">Codex CLI 官方说明</a>安装或配置命令行入口。不要复制其他电脑的带版本号安装路径。</p>
+<p>下面会新增持久 MCP 配置。列表已有 laya 时，先查看和保留旧配置，不重复添加。可备份实际配置：</p>
+<pre><code class="language-powershell">$layaCodexDir = if ($env:CODEX_HOME) { $env:CODEX_HOME } else { Join-Path $env:USERPROFILE '.codex' }
+$layaCodexConfig = Join-Path $layaCodexDir 'config.toml'
+if (Test-Path -LiteralPath $layaCodexConfig) {
+    Copy-Item -LiteralPath $layaCodexConfig -Destination ($layaCodexConfig + '.before-laya-' + (Get-Date -Format 'yyyyMMdd-HHmmss') + '.bak')
+}
+Write-Host &quot;配置位置：$layaCodexConfig&quot;
+</code></pre>
+<p>确认没有同名注册后执行：</p>
+<pre><code class="language-powershell">$layaMcpArgs = @(
+    'mcp', 'add', 'laya',
+    '--env', &quot;LAYA_DEVICE=$env:LAYA_DEVICE&quot;,
+    '--env', 'LAYA_PRELOAD=0',
+    '--env', 'LAYA_MODELS=multilingual',
+    '--env', &quot;HF_HOME=$env:HF_HOME&quot;,
+    '--env', 'USE_TF=0',
+    '--env', 'PYTHONUTF8=1',
+    '--', $layaPython, '-m', 'laya.mcp.server'
+)
+codex @layaMcpArgs
+if ($LASTEXITCODE -ne 0) { throw 'MCP 注册失败。' }
+codex mcp get laya
+</code></pre>
+<p>STDIO 不需要开放端口。LAYA_PRELOAD=0 表示首次调用加载模型；LAYA_MODELS 只是预加载集合，不是模型白名单。中文调用应明确 model=&quot;multilingual&quot;。</p>
+<p>重新加载 MCP 或重新打开 Codex，在新任务中输入：</p>
+<blockquote>
+<p>调用 laya_status 查看环境，再调用 laya_predict，以 multilingual 模型将“商品无法开机，我要退货退款”分到售前、售后或其他。调用后检查实际设备，展示真实结果。不要用 laya_route 代替推理，不自行改用云端服务。</p>
+</blockquote>
+<p>工具超时时，在实际配置文件已有的 [mcp_servers.laya] 表内、command 和 args 同级添加以下建议值；不要放入 env 子表或创建重复表：</p>
+<pre><code class="language-toml">startup_timeout_sec = 60
+tool_timeout_sec = 180
+</code></pre>
+<p>先在第 4 步完成权重下载，不用无限延长超时掩盖错误。<a href="https://developers.openai.com/codex/mcp">Codex MCP 文档</a></p>
+<h2>6．可选：提供本机 HTTP API</h2>
+<p>仅其他应用需要 HTTP 时使用。与 MCP 同时运行可能重复占用显存。在原 PowerShell 窗口：</p>
+<pre><code class="language-powershell">$env:LAYA_HOST = '127.0.0.1'
+$env:LAYA_PORT = '8000'
+$env:LAYA_PRELOAD = '1'
+$env:LAYA_MODELS = 'multilingual'
+&amp; $layaPython -m laya.serve
+</code></pre>
+<p>保持该窗口运行，另开 PowerShell：</p>
+<pre><code class="language-powershell">Invoke-RestMethod -Uri 'http://127.0.0.1:8000/health'
+$layaRequest = @{
+    model = 'multilingual'
+    state = @{ text = '商品坏了，我要退款。' }
+    questions = @{ refund = @{ type = 'noul'; instructions = '客户明确要求退款。' } }
+} | ConvertTo-Json -Depth 8
+Invoke-RestMethod -Uri 'http://127.0.0.1:8000/v1/systemone' -Method Post -ContentType 'application/json; charset=utf-8' -Body ([System.Text.Encoding]::UTF8.GetBytes($layaRequest))
+</code></pre>
+<p>/health 的 device 可能只是配置偏好；健康响应不是实际设备证据。/v1/systemone 是 HTTP 推理接口，不能当作 MCP URL。按 Ctrl+C 停服务。<a href="https://github.com/NandhaKishorM/laya/blob/main/laya/serve.py">HTTP 源码</a></p>
+<h2>7．故障排查</h2>
+<table>
+<thead>
+<tr>
+<th>现象</th>
+<th>下一步</th>
+</tr>
+</thead>
+<tbody>
+<tr>
+<td>py 无法执行、跳商店</td>
+<td>用第 1 步可运行的 python 确认路径；否则修复 Python 安装。</td>
+</tr>
+<tr>
+<td>TLS、证书、连接错误</td>
+<td>检查系统时间、网络和已授权代理，保留完整报错；不要关闭证书验证。</td>
+</tr>
+<tr>
+<td>CUDA=False</td>
+<td>核对驱动和 PyTorch 构建；能在 CPU 跑不等于 GPU 成功。</td>
+</tr>
+<tr>
+<td>Hugging Face 下载失败</td>
+<td>恢复官方访问后重试，不静默切换镜像、云端 API 或来源不明权重。</td>
+</tr>
+<tr>
+<td>缺少 rl_agent_config.json</td>
+<td>检查下载完整性和所选模型，不能手工伪造配置。</td>
+</tr>
+<tr>
+<td>变慢或显存不足</td>
+<td>查 actual_device、重复进程和输入长度；明确改 CPU 时同步改 MCP 配置。</td>
+</tr>
+<tr>
+<td>MCP 有名字但不能推理</td>
+<td>查导入错误、权重缓存和超时；status/route 不是模型推理。</td>
+</tr>
+<tr>
+<td>中文效果差</td>
+<td>强制 multilingual，缩短 state、减少选项，用自己的中文样本检验。</td>
+</tr>
+</tbody>
+</table>
+<h2>8．停用、更新与验收</h2>
+<p>停用接入但保留安装文件：</p>
+<pre><code class="language-powershell">codex mcp remove laya
+</code></pre>
+<p>重新加载 MCP；如进程仍驻留，正常退出启动它的 Codex 会话。也可在已有 laya 配置表设置 enabled=false。</p>
+<p>升级前保存版本清单，在新目录建立新环境，验证后再切换。删除前人工确认完整目录及内容，本教程不提供批量删除命令。</p>
+<p>分开记录四层结果：依赖可导入、真实推理成功、Codex 调用成功、业务样本达标。前三层通过不自动证明第四层。本地 Laya 也不等于整个 Codex 会话离线。</p>
+<h2>官方来源</h2>
+<ul>
+<li><a href="https://github.com/NandhaKishorM/laya">Laya 作者仓库</a></li>
+<li><a href="https://pypi.org/project/laya/">PyPI 包</a></li>
+<li><a href="https://huggingface.co/convaiinnovations/laya-multilingual">多语言模型卡</a></li>
+<li><a href="https://github.com/NandhaKishorM/laya/blob/main/laya/mcp/server.py">Laya MCP 实现</a></li>
+<li><a href="https://pytorch.org/get-started/locally/">PyTorch 安装</a></li>
+<li><a href="https://developers.openai.com/codex/mcp">Codex MCP</a></li>
+</ul>
+<p>运行时验证尚未完成：请在目标 Windows 电脑按本文验收步骤实测。</p>
+</main></html>
