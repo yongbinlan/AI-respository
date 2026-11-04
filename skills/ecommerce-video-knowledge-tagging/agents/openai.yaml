@@ -1,0 +1,4 @@
+interface:
+  display_name: "视频知识库素材标签打标"
+  short_description: "给货架与内容电商参考视频打标，输出带原片证据和缺口的案例卡"
+  default_prompt: "用 $ecommerce-video-knowledge-tagging 分析我提供的电商视频，交付 Markdown 和 JSON 标签卡预览。"
