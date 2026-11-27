@@ -18,7 +18,7 @@
 
 [Experience Reuse](skills/experience-reuse/README.md)
 
-Reuse evidenced execution methods before repeating a failed approach. Works alongside native memory with project-scoped records, condition checks, and practical cases explaining why remembered experience may still go unused.
+Make execution experience reusable and apply it before the next relevant action. Works alongside native memory with scoped records and condition checks. Includes a real fresh-session case that loaded the preflight and used the correct catalog path without explicitly naming the skill; token reduction is not its primary goal.
 
 ## 安装
 

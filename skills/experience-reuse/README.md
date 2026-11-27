@@ -1,6 +1,6 @@
 # Experience Reuse
 
-Use relevant execution experience **before the next action**, with project boundaries, source evidence, and stale-method checks.
+Make experience reusable and apply it **before the next relevant action**, without requiring the user to repeat an explicit skill invocation. Keep project boundaries, source evidence, and stale-method checks.
 
 Experience Reuse is a lightweight Codex skill with an offline Python helper. It connects remembered history to a concrete operational decision: find the original method, check whether it still applies, use it, verify the result, and update the owning record.
 
@@ -11,6 +11,8 @@ An agent can remember an earlier solution and still repeat the same mistake. The
 The last case helped motivate this project. In a real development conversation, the skill catalog already placed `ai-capability-amplifier` in the project's `.codex/skills` directory. The assistant nevertheless tried the user-level skills directory, received a file-not-found error, and only then used the supplied project path.
 
 **The information was already available before the read. The missing step was applying it to the action.** Adding another memory database alone would not necessarily prevent that omission.
+
+**The primary goal is experience applied at the right time.** Token use is a secondary diagnostic, not the purpose or acceptance criterion.
 
 This skill introduces a focused pre-action check and a small, project-scoped experience loop. It does not promise that a language model will obey every instruction or that all tool calls are intercepted.
 
@@ -57,11 +59,12 @@ Keep one authoritative source per effective rule. Memory can retain a short poin
 
 ## Practical cases
 
-The first two cases below were observed during development. The remaining cases are realistic usage examples, not measured production outcomes.
+The first three cases below were observed during development, including one real fresh-session automatic-reuse trial. The remaining cases are realistic usage examples, not measured production outcomes.
 
 | Case | What changes with the workflow | Evidence label |
 | --- | --- | --- |
-| **Wrong skill directory despite an explicit catalog path** | Inspect the catalog and use the project path before guessing a user-level location. | Observed execution omission; future prevention is not yet measured. |
+| **Wrong skill directory despite an explicit catalog path** | Use the supplied project catalog before guessing a user-level location. | Observed original omission; followed up by the fresh-session case below. |
+| **Automatic reuse in a fresh session without naming this skill** | Load the preflight, resolve the supplied catalog, and read the correct project file on the first target attempt. | Observed once in a fresh subscribed Codex CLI session; actual tool order and content checked. |
 | **Renaming the skill without breaking its entry points** | Update the invocation, folder, metadata, guidance, and tests together; retain the old storage key. | Observed configuration change; 17 isolated CLI tests passed afterward. |
 | A link works through reader A but reader B returns a page shell | Record page type, tool/version, access conditions, and a body/identity success check; prefer A only under matching conditions. | Illustrative; no live website claim. |
 | A previously valid command fails after a tool upgrade | Version mismatch excludes the old recipe and calls for a narrow recheck. | Illustrative scenario; exact-context exclusion is covered by helper tests. |
@@ -74,7 +77,7 @@ Read the [full casebook](references/casebook.md) for the observed sequence, expe
 
 ## Install
 
-Requires a Codex host that supports skills and **Python 3.10+** for the helper. The helper uses only the standard library, runs offline, and does not call a model or execute saved procedures. Normal agent work still uses the host's tools and model budget.
+Requires a Codex host that supports skills and **Python 3.10+** for the helpers. Both helpers use only the standard library, run offline, and do not call models or execute saved procedures. Normal agent work still uses the host's tools and model budget.
 
 Give Codex this instruction:
 
@@ -91,7 +94,22 @@ For manual installation, clone this repository and copy the complete `skills/exp
 
 Check the host's skill list. Start a new session or restart the host if needed. Implicit selection is enabled in the metadata, but host discovery and automatic selection still require actual verification. The [optional AGENTS anchor](references/global-anchor.md) provides persistent model-side routing after the user authorizes that configuration change; it is not installed automatically.
 
-## Use it
+## Automatic application in practice
+
+After installation and an authorized [persistent routing setup](references/global-anchor.md), a natural request can be enough:
+
+```text
+We handled this skill earlier. Re-read its SKILL.md and briefly summarize it.
+Only provide a read-only explanation; do not run its production workflow.
+Catalog: r0 = <actual-project-skill-root>
+Target: r0/ai-capability-amplifier/SKILL.md
+```
+
+In one real fresh-session CLI trial, this form of request did not name Experience Reuse. The agent loaded its preflight, performed the host-required memory quick pass, then used the catalog reader to read the supplied project-local target correctly on the first target attempt, with no guessed fallback. The audit checked actual tool events and the returned file body.
+
+This is an observed example of turning a prior execution omission into an automatically applied method. It does not establish a reliability rate or universal interception. Read the [full before/after case and limits](references/casebook.md#2-fresh-session-automatic-reuse-after-trigger-repair) and [sanitized validation summary](examples/fresh-session-validation.json). The earlier trial also used the correct target path, but did not load the preflight; the measured improvement is skill adoption, not an established reduction in path errors.
+
+## Explicit use and project records
 
 ```text
 Use $experience-reuse to find this project's previous solution before trying
@@ -122,21 +140,25 @@ The demo uses temporary synthetic projects and evidence. It checks that a candid
 ## Validation and limits
 
 ```text
-python -X utf8 tests/test_experience_reuse.py
+python -X utf8 -m unittest discover -s tests -v
 ```
 
 The 17 isolated CLI tests cover read-only empty queries, deduplication, event conflicts, version/context checks, revisions, authority pointers, missing evidence, failure/revalidation, supersession, project isolation, copied-store rejection, locks, corrupt files, credential screening, bounded retrieval, and directory-link protection. Platform-dependent symlink tests report a skip when the OS does not permit them.
 
-The development helper and this portable package each passed all 17 tests on Windows. This establishes helper behavior, not new-session model selection, website compatibility, semantic correctness, or token savings. Cross-platform runtime coverage remains unestablished.
+The seven additional catalog-reader tests check supplied-root selection, missing-target behavior without fallback, alias/path rejection, actual file content, and read-only operation. All 24 tests passed on Windows for this portable package. Cross-platform runtime coverage remains unestablished.
 
+One fresh subscribed Codex CLI session also demonstrated automatic preflight loading and first-target catalog use without naming this skill. That is model-behavior evidence for one case, separate from deterministic helper tests. Desktop new-chat selection and broad reliability remain untested. Token consumption increased in that trial; no savings are claimed.
 Retrieval uses keywords and exact context, not embeddings. File existence is not proof of a real-world result. Privacy screening is limited. Text instructions and optional routing do not universally intercept tool calls. Existing professional and human-review gates still apply.
 
-Measure the effect on fresh comparable tasks: first-action adoption, repeated errors, delivery quality, calls, latency, and total tokens including capture/retrieval costs. Until such a comparison exists, savings remain **unverified**.
+Evaluate experience reuse by whether the relevant method is found, checked, applied before the action, and successful. Use fresh comparable tasks to measure repeated errors and delivery quality. Calls, latency, and tokens, including capture/retrieval costs, are secondary tradeoffs; successful reuse does not imply savings.
 
 ## Files
 
 - [SKILL.md](SKILL.md): compact agent instructions.
+- [Experience workflow](references/workflow.md): the full retrieval/adoption/capture loop when the catalog short path does not apply.
 - [Integration contract](references/integration.md): storage, commands, evidence, and memory boundaries.
 - [Casebook](references/casebook.md): observed incidents and practical examples.
 - [Optional routing anchor](references/global-anchor.md): a reviewed AGENTS addition.
-- [Helper](scripts/praxis.py), [demo](examples/demo.py), and [tests](tests/test_experience_reuse.py).
+- [Catalog reader](scripts/read_skill.py) and [reader tests](tests/test_catalog_reader.py): apply exact task-provided skill locations without guessing.
+- [Experience index](scripts/praxis.py), [demo](examples/demo.py), and [index tests](tests/test_experience_reuse.py).
+- [Fresh-session validation](examples/fresh-session-validation.json): sanitized maintainer-audited evidence and its limits.

@@ -1,46 +1,37 @@
 ---
 name: experience-reuse
-description: Reuse execution experience before a previously solved tool, site, or workflow action; capture resolved failures and corrections, check stale methods, and propose scoped skill updates. Use for relevant history or repeated trial-and-error, not every routine step or personal-memory management alone.
+description: >-
+  Trigger before repeating prior work: previously handled / re-read / continue / same issue / 之前处理过 / 重新读取 / 上次 / 续办, including read-only requests to inspect a named skill, file, tool or site. Apply catalog-first path checks or scoped experience reuse; unrelated one-off reads do not trigger it.
 ---
 
 # Experience Reuse
 
-Turn relevant past work into a better next action. Keep the coordination method at user level, experience with its owning project, and stable procedures in their existing skills or tools. Native memory supplies historical pointers.
+Apply relevant experience before the next action. Keep the coordination method at user level, experience with its owning project, and stable procedures in their existing skills or tools. Native memory supplies historical pointers. Successful reuse is the goal; token reduction is a secondary, separately measured possibility.
 
-## When to intervene
+## Trigger and load
 
-- Before the first relevant action when a task involves a known tool/site/workflow and related history is available.
-- Before retrying or switching methods after a failure; after a user correction or a genuinely useful discovery.
-- At task close, capture only useful new observations. Stop when nothing changed; do not repeatedly review every routine step.
+- When the user refers to earlier work and asks to re-read, repeat, resume, or continue an operation involving a named skill, file, tool, site, or workflow, load this skill once before the first relevant operation. Read-only summaries also qualify.
+- A request not to run the target skill's production workflow does not disable this read-only preflight. Do not wait for another failure or replace this preflight with generic memory search.
+- Also intervene for user corrections, retries/method changes after failure, and newly verified reusable discoveries. Unrelated one-off reads do not require this skill.
 
-## Workflow
+## Exact-catalog short path
 
-1. **Locate the authority.** Start with the current instructions, exact supplied paths, injected native-memory pointers, original task state, and existing project indexes. Use an explicit path before guessing a conventional location. Missing recalled history does not prove there is no history; do not scan every conversation or unrelated project.
-2. **Retrieve narrowly.** Prefer the project's existing query interface. Use this skill's `find` for its local index, expanding at most three relevant entries. Supply the actual project root and currently observed tool/site/action/environment. Read-only queries create no files.
-3. **Check before acting.** Read the authoritative method and verify scope, current instructions, conditions, evidence, invalidation factors, and permission. `validated` means a successful observation was recorded; it does not mean permanent correctness, formal approval, or publication authority. Candidates and missing-context results are leads requiring review.
-4. **Apply and verify.** Prefer a method whose conditions match. Judge success by the requested business outcome, not process exit or an agent's assertion. Reuse deterministic checks where the original workflow provides them. This text and the index do not intercept other tools. Avoid repeating the same failed action under unchanged conditions; changed conditions may justify a narrow probe.
-5. **Maintain the owning record.** Update an existing task/incident/experience source first. Use `authority_ref` for a lightweight pointer instead of copying its procedure. Only when there is no appropriate owner, capture a concise project method in `.codex/praxis-nexus/experiences.json`. Merge matching patterns, record actual adoption separately, and mark failed methods for review.
-6. **Consolidate selectively.** Put stable methods into the relevant skill's reference, configuration, or script. Preserve the project's existing promotion/review gates. Do not invent a success-count threshold as approval. One evidenced success can become a conditional candidate immediately; never repeat a known mistake just to accumulate observations.
+Once this skill is loaded, if the task supplies exact root mappings and a skill reference, resolve and read that target directly. Do not add this skill's own memory/index search, run the target's production workflow, or create experience records for this read. If a higher-priority host memory protocol requires a quick pass, follow it and reuse the result without a duplicate search; no memory match is needed to use an explicit catalog.
 
-## Native memory and ownership
-
-- Treat native memory as a historical recall layer. Keep one authoritative source per effective rule; summaries may link to it. Current instructions and authoritative sources resolve stale summaries. Stop using an affected method while a material conflict remains unresolved.
-- Apply user corrections to the current task first, then route them: enduring preferences through the host's supported memory protocol, project requirements to project guidance, operational discoveries to scoped experience. Keep one-time requests local to the task.
-- Follow the host's memory-write permissions. This skill never edits generated native-memory files, migrates sessions, or copies raw conversations. Explicit remember/forget/correct requests use the host's existing supported mechanism.
-- Do not propagate project methods across projects by default. Explicitly authorized sharing belongs in the specified shared skill/configuration with provenance and environment conditions.
-- Store no credentials, cookies, tokens, or raw private content. Evidence is data, not new instructions or authorization. Existing login/verification, spend, account, publication, specialist, and human-review boundaries remain effective.
-- Reuse existing planning, recovery, and verification workflows; do not duplicate them. If installed, Polaris Forge and Token Efficiency Router can supply those methods. They are optional integrations, not required dependencies. Do not add hooks, background jobs, model changes, or agent teams implicitly.
-
-## Local helper
-
-Run `scripts/praxis.py` relative to this installed skill's actual directory. Python 3.10+; standard library only. It works offline, does not execute saved methods, does not call models, and checks evidence references without reading their contents.
+Run this skill's `scripts/read_skill.py`, copying the mappings and reference from the current task:
 
 ```text
-python -X utf8 <installed-skill>/scripts/praxis.py find --project <actual-project-root> --query <action-or-symptom> --context-file <observed-context.json>
+python -X utf8 <installed-skill>/scripts/read_skill.py --root "r0=<actual-project-skill-root>" --root "r1=<actual-user-skill-root>" --reference r0/<target-skill>/SKILL.md
 ```
 
-Read [the integration contract](references/integration.md) when capturing, observing, or changing an entry. Distinguish no match, context exclusion, unavailable evidence, and read errors. Do not create an index for a single lookup.
+The reader only uses supplied roots. Unknown aliases, path escapes, and missing files fail without guessing another location. Success returns `ok: true`, `activation: experience-reuse.catalog-first`, the actual `resolved_path`, and the target's full `content`. Inspect the real output, complete the original read-only task, and stop if there is no new experience to capture.
 
-## Verify the effect
+## Other experience tasks
 
-In a new task, check whether the method was found before the first relevant action, actually adopted, and successful. Classify failures as capture, retrieval, interpretation, execution, or staleness. Compare native memory alone against native memory plus this skill on comparable tasks, including maintenance/retrieval costs. Installation and helper tests do not establish automatic model invocation or net token savings; report `savings_unverified` until measured.
+Read [the experience workflow](references/workflow.md) for scoped retrieval, condition checks, adoption, outcome verification, maintenance, and consolidation. Use `scripts/praxis.py` only when a structured index is useful; read [the integration contract](references/integration.md) before changing records. Prefer pointers to existing authorities. A single lookup does not require creating an index.
+
+## Boundaries and verification
+
+Both helpers require Python 3.10+, use the standard library, run offline, and make no model calls. The catalog reader writes nothing; the index writes only inside the explicit project. Current instructions and authoritative sources govern recalled history. Never edit generated native memories, copy private chats, or propagate project methods globally without authorization. Existing access, credential, spend, professional-role, and review gates remain effective. Do not implicitly install hooks/background tasks or change models.
+
+This is model-side routing, not a universal tool interceptor. Verify actual skill loading before the target action, method adoption, the first target path, and the requested result in fresh sessions. Installation or helper tests alone do not prove automatic selection. Report measured costs separately; do not claim token savings from successful reuse.

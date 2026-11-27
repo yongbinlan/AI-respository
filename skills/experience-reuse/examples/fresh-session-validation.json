@@ -1,0 +1,57 @@
+{
+  "case": "Fresh-session automatic reuse after trigger repair",
+  "observed_on": "2026-11-27",
+  "primary_goal": "Apply an operational lesson before the next relevant action without naming the skill in the task prompt.",
+  "evidence_type": "Maintainer audit of local native CLI tool events and returned target content; raw logs not published.",
+  "environment": {
+    "host": "Codex CLI",
+    "cli_version": "0.163.0",
+    "model": "gpt-6.1-sol",
+    "reasoning_effort": "high",
+    "billing_route": "Existing ChatGPT subscription; no API billing",
+    "native_memory": "Enabled; supplied summary unchanged from prior enabled trial",
+    "hooks_installed": false
+  },
+  "observed_checks": {
+    "same_task_prompt": true,
+    "user_prompt_names_experience_skill": false,
+    "skill_loaded_before_target": true,
+    "catalog_adapter_executed": true,
+    "first_target_path_correct": true,
+    "actual_target_content_verified": true,
+    "fallback_attempted": false
+  },
+  "post_repair_fresh_sessions": 1,
+  "offline_test_coverage": {
+    "experience_index_tests": 17,
+    "catalog_reader_tests": 7
+  },
+  "secondary_usage_diagnostics": {
+    "prior_enabled_without_preflight": {
+      "total_tokens": 64999,
+      "model_calls": 2
+    },
+    "post_repair": {
+      "usage": {
+        "input_tokens": 98668,
+        "cached_input_tokens": 71808,
+        "cache_write_input_tokens": 0,
+        "output_tokens": 418,
+        "reasoning_output_tokens": 26,
+        "uncached_input_tokens": 26860,
+        "total_tokens": 99086
+      },
+      "model_calls": 3,
+      "terminal_calls": 3
+    },
+    "scope": "Test sessions only; excludes parent preparation/audit; not API-charge calculation",
+    "token_savings_claimed": false
+  },
+  "limitations": [
+    "Single post-repair CLI observation; no reliability rate or Desktop new-chat claim.",
+    "Prior enabled trial also selected the correct target path; adoption changed, no path-error reduction established.",
+    "Public instructions are an English adaptation; a post-test clarification defers to higher-priority native-memory protocols; no extra model trial for either documentation change.",
+    "Catalog adapter matches the implementation actually used; no target-specific hardcoding.",
+    "Raw transcripts, memory bodies, and machine-specific paths remain private."
+  ]
+}

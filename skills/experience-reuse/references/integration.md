@@ -89,3 +89,11 @@ The helper rejects protected native-memory/other-agent paths, common credential-
 Writes use an exclusive lock, atomic replacement, and a previous-version backup. An unknown existing lock causes failure and is not removed. Stores bind to the resolved project root; a copied store is not silently inherited by another project. Corrupt data is preserved instead of overwritten or silently rebuilt.
 
 The helper checks structure, context, source availability, and recorded state. It cannot verify semantics, real-world truth, or a model's future compliance. Skill invocation and AGENTS routing are model-side guidance; they are not a universal tool interceptor.
+
+## Repeated-work routing and catalog reads
+
+[SKILL.md](../SKILL.md) owns the trigger and exact-catalog short path. The optional [AGENTS anchor](global-anchor.md) makes the same trigger visible before the skill body is loaded. Read-only summaries and a prohibition on running the target's production workflow do not exclude this preflight.
+
+`scripts/read_skill.py` accepts task-provided `--root alias=absolute-path` mappings and `--reference alias/skill/SKILL.md`. It returns JSON containing the actual path and body, without creating files or trying alternate roots. Unknown/duplicate aliases, path escapes, other-agent roots, and missing files fail. The target skill is not executed. This helper is generic; it contains no special case for the development target.
+
+Follow higher-priority host memory quick-pass requirements and reuse their results. The short path adds no separate memory search and creates no index. A missing memory match does not invalidate an explicit current catalog. Other experience tasks use [the full workflow](workflow.md).

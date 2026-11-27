@@ -1,25 +1,27 @@
 # Optional model-side routing
 
-Install the skill first. If the user authorizes persistent routing, append a small block to the existing user-level or project-level `AGENTS.md`, preserving all unrelated text. Resolve the real installed skill path before filling the template. Do not create another agent's skill directory or modify the generated native-memory store.
+Install the skill first. Persistent routing is a separate authorized configuration change; installation does not apply this template automatically. Resolve the actual installed `SKILL.md` path, replace `<absolute-installed-SKILL.md>` below, and append only this marked block to the appropriate existing user-level or project-level `AGENTS.md`. Preserve unrelated text. Never edit generated native memories or another agent's skill directory.
 
 ```markdown
 <!-- experience-reuse:start -->
-## Experience Reuse
+## Experience Reuse - repeated-work preflight
 
-For a relevant previously solved tool/site/workflow action, repeated failure,
-user correction, or newly verified method, use the installed experience-reuse
-SKILL.md before the affected action or when capturing the discovery. Use the
-exact installed path established during setup. Do not invoke it for every
-routine step. Reuse exact paths and evidence already supplied.
+When the user refers to earlier work and asks to re-read, repeat, resume, or
+continue an operation involving a named skill, file, tool, site, or workflow,
+load `<absolute-installed-SKILL.md>` once before the first relevant operation.
+This applies to read-only summaries too. A request not to run the target
+skill's production workflow does not disable this read-only preflight.
+Do not replace the preflight with a generic memory search. Follow its short
+path when an exact catalog is already supplied.
 
-Keep experience with its owning project/source; native memory supplies
-historical pointers. Read the authoritative method and check current conditions
-before adopting it. Preserve the project's existing promotion/review gates.
-Do not edit generated native memories or propagate project methods globally.
-This is model-side guidance, not a host-wide tool interceptor.
+Also use it for a user correction, a resolved failure, or a newly verified
+reusable method. Unrelated one-off reads do not require it. Keep experience
+with its owning project/source, retain current authority and approval gates,
+and do not edit generated native memories or propagate project methods globally.
+This is model-side routing, not a universal tool interceptor.
 <!-- experience-reuse:end -->
 ```
 
-Verify the effective file after editing, then check discovery/invocation in the actual host. A new session or host restart may be needed. Observing a routing block in one session does not establish automatic skill selection in every future session.
+Verify the effective file, instruction precedence, and discovery in the actual host. A new session or host restart may be needed. Higher-priority host memory rules still apply; the skill cannot disable them. See the [fresh-session case](casebook.md#2-fresh-session-automatic-reuse-after-trigger-repair) for one observed successful application with this routing design. That observation is not a reliability guarantee for other hosts or tasks.
 
-To stop this routing, remove only the marked block. Setting `allow_implicit_invocation: false` in the skill's UI metadata disables implicit selection while retaining explicit invocation. Preserve later unrelated edits instead of restoring an entire old AGENTS backup blindly.
+To remove this routing, delete only the marked block, preserving later unrelated edits. Setting `allow_implicit_invocation: false` disables implicit skill selection, but a separate AGENTS instruction can still direct a model to read the installed file. Review both sources when disabling automatic routing; do not blindly restore an old whole-file backup.
