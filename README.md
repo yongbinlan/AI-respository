@@ -16,7 +16,7 @@
 
 从货架和内容电商参考视频提取商品、购买问题、开头和证明动作，输出带原片证据及时间段的案例标签卡。
 
-[Experience Reuse](skills/experience-reuse/README.md)
+[Experience Reuse](skills/experience-reuse/README.md) · [WorkBuddy 安装包与说明](packages/experience-reuse-workbuddy/README.md)
 
 Make execution experience reusable and apply it before the next relevant action. Works alongside native memory with scoped records and condition checks. Includes a real fresh-session case that loaded the preflight and used the correct catalog path without explicitly naming the skill; token reduction is not its primary goal.
 

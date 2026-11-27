@@ -1,0 +1,13 @@
+请从下面的 GitHub 地址下载并安装 Experience Reuse 的 WorkBuddy 专用版 v1.0.0：
+
+安装说明：https://github.com/yongbinlan/AI-respository/blob/main/packages/experience-reuse-workbuddy/README.md
+ZIP 下载：https://raw.githubusercontent.com/yongbinlan/AI-respository/main/packages/experience-reuse-workbuddy/v1.0.0/Experience-Reuse-WorkBuddy-v1.0.0.zip
+预期 SHA-256：b72f213fd0578ab383bb293c8f7711e2288d8ea75bf5007353ffb25abfc4b1d8
+
+1. 下载 ZIP 到本机可访问目录，报告保存路径并校验 SHA-256；不一致就停止安装。只处理这个指定包，不下载或执行其他安装器。
+2. 先检查包结构与脚本。使用当前 WorkBuddy 的“技能 → 添加技能 → 上传技能”导入本地 ZIP，并确认“已安装且启用”。若当前工具不能点击上传，请告诉我需要点击的具体入口并保留已下载文件，不声称已安装、不改走技能市场搜索。
+3. 解析本机实际的 experience-reuse/SKILL.md 路径，保留原有同名版本和配置，先备份比较。不使用另一台电脑的用户名或目录，不复制其他 Agent 的登录态、技能目录或私有经验。
+4. 按包内 references/workbuddy-setup.md 设置条件自动触发：把 routing-template.md 的占位符替换为真实绝对路径，仅合并标记块、保留其他规则。优先当前版本明确支持且自动加载的用户级入口；若只有项目级能力，明确生效范围，不把写文件当成已加载证明。
+5. 保留“相关任务前核条件并复用经验”和“新 Skill 首次真实成功后自动保存方法、适用条件及证据”两类触发。经验优先归当前项目任务回执，必要时才使用项目索引；不改写生成原生记忆、不跨项目传播私有经验。
+6. 检测 Python 3.10+，在实际技能目录运行全部离线测试、examples/demo.py、scripts/verify_install.py；有实际规则文件时提供 --rule-file。缺 Python 就说明缺项，不擅自安装系统软件。只用当前 WorkBuddy 已配置账户/模型，不新增 API Key、不改记忆开关、安全策略、Hooks、后台任务或模型配置。
+7. 返回实际安装路径、启用状态、规则入口与生效范围、27 项测试及核验结果。安装成功与新会话自动触发成功分开报告；给出两个不点名 Experience Reuse 的新会话验收提示词。若无法新建/观察会话，由我分别发送并验证，不模拟两个新会话、不另开计费 API，也不代填经验。

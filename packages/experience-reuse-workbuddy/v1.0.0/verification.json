@@ -1,0 +1,27 @@
+{
+  "package": "Experience Reuse for WorkBuddy",
+  "version": "1.0.0",
+  "source_commit": "b9789f9c3ea88201f299ff8ec52219a0a5d36f3b",
+  "zip_filename": "Experience-Reuse-WorkBuddy-v1.0.0.zip",
+  "zip_sha256": "b72f213fd0578ab383bb293c8f7711e2288d8ea75bf5007353ffb25abfc4b1d8",
+  "zip_bytes": 32754,
+  "bundled_files": 16,
+  "offline_tests_passed": 27,
+  "checks": [
+    "WorkBuddy required frontmatter schema",
+    "ZIP CRC and single-folder structure",
+    "No private experiences, account data or fixed source-machine paths",
+    "Relocation to a path containing Chinese text and spaces",
+    "Relocated package manifest verification, 27 tests and lifecycle demo"
+  ],
+  "project_store": ".codebuddy/experience-reuse/experiences.json",
+  "target_workbuddy_end_to_end_verified": false,
+  "limitations": [
+    "Target WorkBuddy installation, enablement, actual global/project rule loading and fresh-session automatic reuse require acceptance on that computer.",
+    "Official .codebuddy compatibility for code tasks does not establish identical loading in every WorkBuddy version or office-task mode.",
+    "No native-memory migration, old project-store migration, account/login or subscription transfer.",
+    "Package does not add API credentials; normal agent use follows the target WorkBuddy account/model billing."
+  ],
+  "normal_agent_billing": "Uses the target WorkBuddy account/model; no Codex subscription or credential transfer.",
+  "verification_result": "portable_package_and_offline_helpers_passed"
+}

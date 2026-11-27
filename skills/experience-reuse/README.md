@@ -77,6 +77,10 @@ The first five cases below were observed during development, including catalog-p
 
 Read the [full casebook](references/casebook.md) for the observed sequence, expected intervention, evidence requirements, and limits of each case.
 
+## WorkBuddy package
+
+For WorkBuddy on another computer, use the separate [WorkBuddy ZIP and Chinese installation guide](../../packages/experience-reuse-workbuddy/README.md), not this Codex folder. It includes first-success capture, a host routing template, and 27 offline checks. Target WorkBuddy installation and fresh-session activation still require acceptance on that machine.
+
 ## Install
 
 Requires a Codex host that supports skills and **Python 3.10+** for the helpers. Both helpers use only the standard library, run offline, and do not call models or execute saved procedures. Normal agent work still uses the host's tools and model budget.
