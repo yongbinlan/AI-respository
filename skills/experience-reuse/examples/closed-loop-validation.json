@@ -1,0 +1,111 @@
+{
+  "case": "New experience saved in a project receipt, then automatically reused in a fresh session",
+  "observed_on": "2026-11-27",
+  "evidence_type": "Maintainer audit of completed tool events, actual receipt creation/read, native usage counters, and independently recalculated results; raw logs remain private.",
+  "scenario": "Isolated synthetic offline order-export compatibility fixture; real executable error and results, not a production website.",
+  "actual_persistence_route": {
+    "owner": "Project task verification receipt",
+    "experience_record": "results/batch_a.verification.md",
+    "evidence_record": "results/batch_a.report.json",
+    "agent_saved_record_without_explicit_reminder": true,
+    "harness_seeded_experience": false,
+    "structured_index_created": false,
+    "praxis_capture_or_find_used": false,
+    "global_skill_rewritten": false
+  },
+  "learned_method": {
+    "tool": "order_export",
+    "version": "1.0.0",
+    "input_schema": "orders.archive/2",
+    "report_layout": "archive-v2",
+    "precondition": "Inspect current input and check version/schema and supported parameters before applying the method.",
+    "invalidation": "Recheck if tool version, schema or supported layout changes."
+  },
+  "session_isolation": {
+    "separate_cli_sessions": 2,
+    "resume_or_fork": false,
+    "chat_history_handoff": false,
+    "both_task_prompts_name_skill": false,
+    "any_task_prompt_names_skill": false,
+    "B_prompt_contains_recipe_or_receipt_path": false,
+    "B_prompt_mentions_previous_project_tool_work": true,
+    "new_batch_added_after_A_finished": true,
+    "A_receipt_frozen_before_B_and_unchanged_afterward": true
+  },
+  "observed_checks": {
+    "new_experience_found_and_saved_by_A": true,
+    "saved_record_has_scope_conditions_method_and_actual_evidence": true,
+    "new_session_B_without_skill_name_or_recipe_in_prompt": true,
+    "B_loaded_skill_before_target_operation": true,
+    "B_read_A_record_before_report": true,
+    "B_checked_current_version_and_schema": true,
+    "B_first_report_used_learned_layout": true,
+    "B_repeated_layout_errors": 0,
+    "new_batch_result_correct": true
+  },
+  "observed_event_order": {
+    "A_default_failure_event": 11,
+    "A_success_event": 24,
+    "A_experience_created_event": 26,
+    "B_skill_loaded_event": 6,
+    "B_experience_read_event": 15,
+    "B_successful_first_report_event": 19
+  },
+  "results": {
+    "A": {
+      "fulfilled_orders": 3,
+      "units": 9,
+      "gross_total": "114.80",
+      "currency": "CNY",
+      "excluded_rows": 1
+    },
+    "B": {
+      "fulfilled_orders": 3,
+      "units": 8,
+      "gross_total": "252.50",
+      "currency": "CNY",
+      "excluded_rows": 1,
+      "report_calls": 1,
+      "layout_errors": 0,
+      "independent_fulfilled_amounts": [
+        "36.00",
+        "116.60",
+        "99.90"
+      ]
+    }
+  },
+  "native_memory_cooperation": {
+    "recall_enabled": true,
+    "same_injected_summary": true,
+    "new_memory_generation_enabled_for_test_invocations": false,
+    "persistent_memory_settings_changed": false,
+    "generated_memory_files_edited": false
+  },
+  "billing_route": "Existing ChatGPT subscription login checked; forced_login_method=chatgpt; API key/base-url environment removed; no API fallback configured.",
+  "secondary_usage_diagnostics": {
+    "model_calls": 14,
+    "terminal_calls": 17,
+    "usage": {
+      "input_tokens": 507727,
+      "cached_input_tokens": 436992,
+      "uncached_input_tokens": 70735,
+      "output_tokens": 3317,
+      "total_tokens": 511044
+    },
+    "scope": "Two test CLI sessions only; excludes parent preparation/audit; cached input is a subset of input.",
+    "efficiency_baseline": "None for this chain",
+    "token_savings_claimed": false
+  },
+  "configuration_preservation": "CLI-added trust entry for only this writable test project was identified by exact original-hash reconstruction and removed after B. Original configuration and protected inputs/instructions restored or unchanged.",
+  "limitations": [
+    "One two-session chain with a synthetic local tool; not a production-website test or a reliability-rate estimate.",
+    "Fresh CLI contexts, not Desktop sidebar chats.",
+    "Demonstrates project-receipt persistence/retrieval, not the structured index capture/find branch or automatic global skill rewriting.",
+    "B was told this project/tool had been used before; its prompt contained neither the skill name nor the learned parameter or experience-file path.",
+    "Native memory remained enabled; memory generation was disabled for these invocations only, preventing this new test experience from being learned through background generation.",
+    "Usage covers the two CLI sessions only, excluding the parent conversation; no token-saving claim.",
+    "Installed skill plus persistent AGENTS routing; this is not a universal tool interceptor.",
+    "Public summary is sanitized and the narrative is English; no additional model test was run for publication."
+  ],
+  "verification_result": "passed_for_project_receipt_branch"
+}

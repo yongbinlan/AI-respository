@@ -1,6 +1,6 @@
 # Experience Reuse casebook
 
-Three development cases below are factual observations from the work that produced this skill, including one successful fresh-session reuse trial. Local usernames, project names, absolute machine paths, and private transcripts are omitted. The other cases illustrate practical use; they are not customer results or claims of measured savings.
+Four development cases below are factual observations from the work that produced this skill, including a catalog-path reuse trial and a two-session discovery-to-reuse chain. Local usernames, project names, absolute machine paths, and private transcripts are omitted. The other cases illustrate practical use; they are not customer results or claims of measured savings.
 
 ## 1. An explicit path was available, but the assistant guessed another
 
@@ -80,11 +80,97 @@ The [sanitized validation summary](../examples/fresh-session-validation.json) re
 
 The package includes seven portable catalog-reader tests alongside the existing 17 index tests. They exercise root selection even when a user-level copy exists, no fallback on a missing project target, alias/path rejection, actual returned content, and no writes. These tests validate deterministic behavior; they do not simulate automatic model selection.
 
-Only one post-repair fresh CLI trial was run. It establishes neither a reliability percentage nor Desktop new-chat behavior, all-host coverage, or elimination of repeated errors. The earlier enabled trial also read the target correctly, so this comparison demonstrates newly observed preflight adoption, not a measured reduction in wrong-path reads. The public instructions are an English adaptation of the tested local instructions; a later clarification explicitly defers to higher-priority host memory quick passes. No extra model trial was run for that documentation clarification or translation. The generic catalog adapter is the same implementation used in the trial.
+Only one post-repair fresh CLI trial was run for this catalog-path case. It establishes neither a reliability percentage nor Desktop new-chat behavior, all-host coverage, or elimination of repeated errors. The earlier enabled trial also read the target correctly, so this comparison demonstrates newly observed preflight adoption, not a measured reduction in wrong-path reads. The public instructions are an English adaptation of the tested local instructions; a later clarification explicitly defers to higher-priority host memory quick passes. No extra model trial was run for that documentation clarification or translation. The generic catalog adapter is the same implementation used in the trial.
 
 Experience reuse is the acceptance goal. Token use is a secondary diagnostic: the earlier enabled-but-unloaded trial used 64,999 total tokens across two model calls; the post-repair trial used 99,086 across three. This case provides **no token-saving claim**. Costs exclude preparation/audit work in the parent conversation and are not an API charge calculation.
 
-## 3. A naming change affected several connected entry points
+## 3. A new lesson saved automatically, then reused in a fresh session
+
+**Status: one complete two-session chain observed on 2026-11-27, using a synthetic offline order-export fixture and the existing ChatGPT subscription. Actual route: project task receipt.**
+
+This case tested a different question from case 2: could an agent discover a new operational method, save it without a reminder, and have a separate fresh session find and apply it? No experience record was seeded by the test harness. Neither task prompt named Experience Reuse or asked the agent to save a lesson.
+
+### Session A: discover, verify, and persist
+
+The isolated project initially contained an ordinary README, local scope instructions, the `order_export` tool, and batch A. There was no experience store or prior task receipt. The tool and inputs were protected from modification. The task asked for fulfilled-order count, units, and amount using the README's command, allowing necessary local result files.
+
+The README's default report call returned the real executable error `E_LAYOUT_MISMATCH`. Inspection and help established that the input schema `orders.archive/2` required the supported `archive-v2` layout. The agent automatically loaded Experience Reuse and its full workflow during recovery, then ran:
+
+```text
+python -X utf8 tools/order_export.py report --file inbox/batch_a.wex --layout archive-v2
+```
+
+The actual result was **3 fulfilled orders, 9 units, CNY 114.80**, excluding one cancelled row. The agent saved the actual JSON output to `results/batch_a.report.json` and, without a save-experience instruction, created `results/batch_a.verification.md` with the lesson, conditions, and result evidence.
+
+The following is an English rendering of the agent-written receipt's operational lesson; the original local receipt was in Chinese:
+
+```text
+Method: after E_LAYOUT_MISMATCH, inspect the input and check report help;
+use the layout they confirm, without changing the tool or source export.
+Verified conditions: order_export 1.0.0; orders.archive/2; archive-v2.
+Evidence: results/batch_a.report.json and the actual successful report output.
+Before later use: recheck tool version and input schema.
+```
+
+This was a project-owned task receipt carrying reusable experience. The agent did not create `experiences.json`, call `praxis.py capture`, or rewrite the user-level skill. That distinction is part of the result, not an implementation detail to hide.
+
+### Session B: automatic loading and actual reuse
+
+After A ended, the observer retained A's project files and added a different batch B. A separate `codex exec` launch created a fresh model session, without resume/fork, chat-history handoff, or copied answers. The task said, in substance:
+
+> We handled this project's order_export export before. Continue with the new batch, inbox/batch_b.wex, and summarize fulfilled orders, units, and amount.
+
+This is an English paraphrase of the Chinese task prompt. It contained no skill name, learned parameter, or experience-file path. The reference to previous work was intentional: it exercised the installed repeated-work trigger.
+
+The new session:
+
+1. Automatically loaded Experience Reuse before the order-export operation.
+2. Discovered the project result files and read the complete A verification receipt and its actual result.
+3. Inspected batch B and checked the current tool version, schema, and supported parameters.
+4. Used `--layout archive-v2` on its **first report call**, with no repeated default-layout error.
+5. Saved the new result and verified it by reading it back and independently recalculating fulfilled rows with `Decimal`.
+
+Batch B produced **3 fulfilled orders, 8 units, CNY 252.50**. Its fulfilled amounts were `36.00 + 116.60 + 99.90`; a cancelled row was excluded. Different inputs and totals distinguish reuse of the method from reuse of A's answer.
+
+### What the audit established
+
+| Check | Actual evidence |
+| --- | --- |
+| New lesson was saved by the agent | A's completed tool command created the receipt after a successful real report. |
+| Observer did not supply the lesson | No seeded record or manual intermediate experience write; the A receipt was frozen before B. |
+| New session did not receive a direct invocation | Neither task prompt named the skill; B received no recipe or receipt path. |
+| Skill and lesson were used before the report | B loaded the skill, then read the full A receipt, then called the report tool. |
+| Conditions were checked | B's actual inspect result confirmed version 1.0.0 and schema orders.archive/2 before reporting. |
+| Known failure was avoided | Exactly one B report call used archive-v2; no E_LAYOUT_MISMATCH occurred in B. |
+| Requested result was correct | Actual output, source identity, excluded rows, saved JSON, and independent decimal arithmetic agreed. |
+
+The audit used completed tool events and actual returned content, not just the assistant's final claim. The A receipt remained unchanged between the frozen handoff and the end of B. The [sanitized closed-loop validation summary](../examples/closed-loop-validation.json) records these checks, event order, and secondary usage diagnostics. Raw chats, native-memory bodies, usernames, and absolute machine paths are not published; this is maintainer-audited evidence.
+
+### Why the project receipt path matters
+
+The skill permits experience to remain with its owning task/project source. Here, A's verification receipt already held the method and evidence, and B found that source through normal project inspection. No second experience database was required. The observed chain is:
+
+```text
+New local failure -> working method verified -> project receipt written
+                    -> independent fresh session
+                    -> skill loaded -> receipt read -> conditions checked
+                    -> method applied -> new result verified
+```
+
+Native memory stayed enabled, with the same injected summary in both sessions. New memory generation was disabled only for these CLI invocations, so the newly discovered method was not learned through this test's background memory generation. User-level routing supplied the entry point; the project receipt owned the new lesson; the fresh session applied it. No generated native-memory file was edited.
+
+### Validation boundary
+
+- One chain, two fresh CLI contexts, and an intentionally constructed local compatibility fixture. This is a real execution test of that fixture, not production-site evidence or a reliability percentage.
+- Automatic loading operated with the installed skill and an authorized persistent AGENTS route. B was explicitly told there was earlier work on this project/tool; unrelated or unprompted future tasks were not tested.
+- This validates **project-receipt persistence and reuse**. It does not validate `praxis.py capture/find` end to end, embedding retrieval, automatic global skill rewriting, or formal promotion of a project lesson.
+- Desktop new-chat behavior, cross-host operation, and reuse without any previous-work cue remain untested. The public English narrative describes the installed local runtime trial; publication is not an additional behavior test.
+- Both sessions used the existing ChatGPT login, with chatgpt-only login forced and API environment credentials removed. No new model/reasoning selection, hooks, extra agents, or API billing route was used.
+- The CLI host added only a trust entry for the isolated writable test project. Exact hash reconstruction verified that sole configuration change; the entry was removed after testing and the original configuration restored. Protected project inputs and existing skill/instructions retained their original content.
+
+The acceptance goal was experience actually saved and reused. The two CLI sessions used 511,044 total tokens across 14 model calls; this includes cached input and excludes parent-conversation preparation/audit. There was no matched efficiency baseline and **no token-saving claim**.
+
+## 4. A naming change affected several connected entry points
 
 **Status: observed configuration change and isolated helper tests.**
 
@@ -96,7 +182,7 @@ During development, the user rejected the original name, Praxis Nexus, and chose
 
 **What is not established:** this proves those local checks, not that a fresh model session automatically selects the renamed skill or that tokens have been saved.
 
-## 4. Reader A returns the body; reader B returns only a page shell
+## 5. Reader A returns the body; reader B returns only a page shell
 
 **Status: illustrative website-access scenario.**
 
@@ -110,7 +196,7 @@ After: the owning project records the page type, reader/version, access conditio
 
 **Test coverage:** exact-context matching, candidate/validated states, and stale-method exclusion are helper-tested. No live website behavior is asserted here.
 
-## 5. A tool upgrade invalidates a previously working command
+## 6. A tool upgrade invalidates a previously working command
 
 **Status: illustrative environment-drift scenario.**
 
@@ -122,7 +208,7 @@ After: the recorded recipe includes the relevant version. The observed current v
 
 **Test coverage:** version exclusion and revision-reset behavior. Unknown context is a request to check, not a guessed match.
 
-## 6. A task-specific correction must retain its scope
+## 7. A task-specific correction must retain its scope
 
 **Status: illustrative user-instruction scenario.**
 
@@ -132,7 +218,7 @@ It does not infer "never rewrite any script in any project." If the user explici
 
 **Verification:** later edits preserve this task's original script; unrelated tasks retain their own permissions. A helper record cannot establish that the user's preference was actually saved by the host.
 
-## 7. A method succeeds once and later fails
+## 8. A method succeeds once and later fails
 
 **Status: illustrative lifecycle scenario.**
 
@@ -144,7 +230,7 @@ The agent diagnoses the changed conditions. A fresh success can revalidate it th
 
 **Test coverage:** failure exclusion, revalidation, event idempotency/conflicts, and supersession.
 
-## 8. Similar tasks in different projects need different methods
+## 9. Similar tasks in different projects need different methods
 
 **Status: illustrative project-isolation scenario.**
 
@@ -154,7 +240,7 @@ If a common method is genuinely useful, authorized sharing promotes a conditiona
 
 **Test coverage:** no cross-project lookup and copied-store rejection. This is not a claim that the host's own memories are automatically project-isolated by this helper.
 
-## 9. A clean process exit hides a wrong result
+## 10. A clean process exit hides a wrong result
 
 **Status: illustrative outcome-verification scenario.**
 
