@@ -1,0 +1,6 @@
+interface:
+  display_name: "Experience Reuse"
+  short_description: "Reuse evidenced methods before repeating a failed approach"
+  default_prompt: "Use $experience-reuse to find relevant project experience before acting, check its conditions, and capture useful new observations."
+policy:
+  allow_implicit_invocation: true

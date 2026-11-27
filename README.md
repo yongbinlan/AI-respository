@@ -16,6 +16,10 @@
 
 从货架和内容电商参考视频提取商品、购买问题、开头和证明动作，输出带原片证据及时间段的案例标签卡。
 
+[Experience Reuse](skills/experience-reuse/README.md)
+
+Reuse evidenced execution methods before repeating a failed approach. Works alongside native memory with project-scoped records, condition checks, and practical cases explaining why remembered experience may still go unused.
+
 ## 安装
 
 打开上面的使用说明，复制对应的安装指令发给 Codex。各项技能可以单独安装，照片转 PFP 还需要当前会话能使用内置生图工具。
