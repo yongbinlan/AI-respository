@@ -1,7 +1,7 @@
 ---
 name: experience-reuse
 description: >-
-  Trigger before repeating prior work: previously handled / re-read / continue / same issue / 之前处理过 / 重新读取 / 上次 / 续办, including read-only requests to inspect a named skill, file, tool or site. Apply catalog-first path checks or scoped experience reuse; unrelated one-off reads do not trigger it.
+  Capture a newly created skill's first verified successful task; also trigger before repeating prior work: previously handled / re-read / continue / same issue / 之前处理过 / 重新读取 / 上次 / 续办, including read-only requests to inspect a named skill, file, tool or site. Apply catalog-first path checks or scoped experience reuse; unrelated one-off reads do not trigger it.
 ---
 
 # Experience Reuse
@@ -13,6 +13,7 @@ Apply relevant experience before the next action. Keep the coordination method a
 - When the user refers to earlier work and asks to re-read, repeat, resume, or continue an operation involving a named skill, file, tool, site, or workflow, load this skill once before the first relevant operation. Read-only summaries also qualify.
 - A request not to run the target skill's production workflow does not disable this read-only preflight. Do not wait for another failure or replace this preflight with generic memory search.
 - Also intervene for user corrections, retries/method changes after failure, and newly verified reusable discoveries. Unrelated one-off reads do not require this skill.
+- After a newly created skill first completes a real task and passes outcome checks, load this skill once before closing the task and follow [first-success capture](references/workflow.md#first-verified-success). No previous failure, second use, repeat-work cue, or user reminder is required. Installation, syntax checks, and process exit alone do not establish task success.
 
 ## Exact-catalog short path
 

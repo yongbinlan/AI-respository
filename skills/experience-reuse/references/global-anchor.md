@@ -19,6 +19,12 @@ reusable method. Unrelated one-off reads do not require it. Keep experience
 with its owning project/source, retain current authority and approval gates,
 and do not edit generated native memories or propagate project methods globally.
 This is model-side routing, not a universal tool interceptor.
+After a newly created skill's first real task succeeds and its outcome has
+been verified, load the same Experience Reuse skill once before closing the
+task and preserve the successful method, applicability conditions, and evidence
+with its owning project/task record. No prior failure, repeat request, or user
+reminder is required. Installation, syntax checks, and process exit alone do
+not establish task success. Preserve existing formal promotion/review gates.
 <!-- experience-reuse:end -->
 ```
 

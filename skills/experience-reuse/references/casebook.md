@@ -1,6 +1,6 @@
 # Experience Reuse casebook
 
-Four development cases below are factual observations from the work that produced this skill, including a catalog-path reuse trial and a two-session discovery-to-reuse chain. Local usernames, project names, absolute machine paths, and private transcripts are omitted. The other cases illustrate practical use; they are not customer results or claims of measured savings.
+Five development cases below are factual observations from the work that produced this skill, including catalog-path reuse, a failure-recovery chain, and a first-success capture/reuse chain. Local usernames, project names, absolute machine paths, and private transcripts are omitted. The other cases illustrate practical use; they are not customer results or claims of measured savings.
 
 ## 1. An explicit path was available, but the assistant guessed another
 
@@ -170,7 +170,71 @@ Native memory stayed enabled, with the same injected summary in both sessions. N
 
 The acceptance goal was experience actually saved and reused. The two CLI sessions used 511,044 total tokens across 14 model calls; this includes cached input and excludes parent-conversation preparation/audit. There was no matched efficiency baseline and **no token-saving claim**.
 
-## 4. A naming change affected several connected entry points
+## 4. First success captured without a failure or correction, then reused
+
+**Status: one qualifying two-session CLI chain observed on 2026-11-27. A newly created skill's first real task succeeded directly; all completed terminal commands in both qualifying sessions returned zero. Actual persistence route: project task receipt.**
+
+This trial exercised the first-success trigger itself. The previous case started with a compatibility error. Here the new business skill already supplied a correct entry point, and its first successful use was supposed to produce reusable evidence without waiting for a failure, correction, second use, or save-experience reminder.
+
+### A new skill and its first successful task
+
+The observer created an isolated project-local skill, `parcel-charge-summary` version 1.0.0, with a small offline Python script and synthetic manifests. Before the fresh session started, the skill had never performed a business run. There was no result or experience record; the output directory existed but was empty. Preparation only parsed/compiled the tool and validated the skill structure.
+
+Session A was asked to execute the new domain skill's first task: count dispatched parcels and calculate their shipping cost for batch A, save the result, and verify it. Its prompt explicitly supplied the **domain skill** path but did not name Experience Reuse, request experience capture, refer to a prior task, or provide a correction.
+
+The agent read the new skill and ran its actual tool. The first business call succeeded: **3 dispatched parcels, 2,800 grams, CNY 21.45**, excluding one cancelled parcel. It then independently checked the saved output, source identity, version, rate-card conditions, per-parcel charges, and sum.
+
+**After this success**, the agent automatically loaded Experience Reuse and its workflow. Before closing the task, it wrote `results/batch_a.verification.json`, with a `first_verified_success` section containing:
+
+- Domain skill/tool identity and version 1.0.0.
+- The actual successful command, pointing to the real input and result file.
+- Schema `parcel.manifest/1`, rate-card ID `regional-2026-11`, currency, and weight/price conditions.
+- Result evidence and the independently checked fee breakdown.
+- Instructions to read the original receipt, check the current skill/input/rate card, replace the batch paths, and revalidate when conditions change.
+- Explicit scope: one successful project observation, with user review still pending.
+
+This was automatically retained first-success experience, not just a raw business output. No `capture/find` call or new experience index was used, and the user-level skill was not rewritten by the tested session.
+
+### A separate session finds and applies the record
+
+Only after A finished did the observer add batch B and launch another independent `codex exec` session. There was no resume/fork, chat handoff, or observer-written experience. A's receipt was frozen outside the project for audit before B began.
+
+B's task was, in English paraphrase: “We completed this project's parcel shipping calculation before. Continue with the new batch and return the dispatched count and total shipping cost.” The original prompt named **neither skill**, gave no solution, and did not supply an experience-file path. The previous-work cue was intentional and remained part of the test conditions.
+
+B automatically loaded Experience Reuse, discovered and read A's `first_verified_success` record, checked current conditions, and then executed the method for the new batch. The result was **4 dispatched parcels, 5,002 grams, CNY 38.00**, excluding one cancelled parcel. Independent calculation matched the real saved output.
+
+The rate card charged CNY 4.80 for the first 500 grams and CNY 2.35 for each started additional 500 grams. A's fees were `4.80 + 7.15 + 9.50 = 21.45`; B's were `4.80 + 7.15 + 11.85 + 14.20 = 38.00`. The 501-gram and 2,001-gram inputs also checked the ceiling rule. New inputs and totals distinguish method reuse from answer reuse.
+
+### Verified chain and actual storage path
+
+| Check | Observed result |
+| --- | --- |
+| New skill read before its first business execution | Passed |
+| A's first business call succeeds without recovery | Passed |
+| Nonzero completed terminal commands in qualifying A / B | 0 / 0 |
+| A loads Experience Reuse after successful execution | Passed |
+| A saves a conditional method and actual evidence without a reminder | Passed |
+| B receives neither skill name, recipe, nor experience path | Passed |
+| B loads the skill and reads A's experience before executing | Passed |
+| Both actual results match independent arithmetic and source checks | Passed |
+
+The observer audited real commands, returned content, file creation, the frozen A record, and B's actual read before its business call. The [sanitized first-success validation summary](../examples/first-success-validation.json) records checks, event order, costs, and limitations. Raw chats, native-memory bodies, usernames, and machine paths stay private; the public evidence is maintainer-audited.
+
+The maintained first-success trigger routes an agent to retain a verified sample. The owning project receipt stores the concrete observation; the next session reads and checks that source. **This case validates the project-receipt branch.** It does not establish structured `praxis.py capture/find`, automatic global skill rewriting, or formal promotion of a first-run observation.
+
+### Excluded preliminary run
+
+An initial fresh A run also succeeded on its first business call and saved experience, but a preflight listing of the not-yet-created output directory returned nonzero. It was excluded from the strict zero-error sample because an error could confound the first-success trigger test. Its logs and usage were retained.
+
+The observer changed only that precondition: an empty output directory was created in a new isolated project with a fresh skill instance. No solution, experience, result, or chat was copied into the qualifying project, and task prompts stayed unchanged. The qualifying A/B chain then ran with zero nonzero terminal commands. The preliminary run is included in total test-use accounting rather than silently discarded.
+
+### Boundaries and native-memory cooperation
+
+Native recall stayed enabled and the qualifying sessions received the same memory summary. Generation of new native memories was disabled only for these test invocations, so this first-success observation was passed through project artifacts, not newly generated native memory. Existing ChatGPT login was checked and forced; API environment credentials were removed, with no API fallback, new model/reasoning selection, hooks, or other agents. The CLI-added test-project trust registration was identified by exact original-hash reconstruction and removed afterward; protected files and effective user configuration retained or recovered their original content.
+
+This is one qualifying two-session chain with a synthetic local business task. It does not establish Desktop new-chat behavior, a reliability percentage, cross-host coverage, or reuse with no related-work cue. The domain skill already provided an intended method: the saved experience adds observed success conditions and evidence, and no ablation proves that record is the only way to obtain the recipe. The English package is an adaptation of the tested installed instructions; publishing it is not another model-behavior trial. Costs are diagnostics, not the acceptance target, and no token-saving claim is made.
+
+## 5. A naming change affected several connected entry points
 
 **Status: observed configuration change and isolated helper tests.**
 
@@ -182,7 +246,7 @@ During development, the user rejected the original name, Praxis Nexus, and chose
 
 **What is not established:** this proves those local checks, not that a fresh model session automatically selects the renamed skill or that tokens have been saved.
 
-## 5. Reader A returns the body; reader B returns only a page shell
+## 6. Reader A returns the body; reader B returns only a page shell
 
 **Status: illustrative website-access scenario.**
 
@@ -196,7 +260,7 @@ After: the owning project records the page type, reader/version, access conditio
 
 **Test coverage:** exact-context matching, candidate/validated states, and stale-method exclusion are helper-tested. No live website behavior is asserted here.
 
-## 6. A tool upgrade invalidates a previously working command
+## 7. A tool upgrade invalidates a previously working command
 
 **Status: illustrative environment-drift scenario.**
 
@@ -208,7 +272,7 @@ After: the recorded recipe includes the relevant version. The observed current v
 
 **Test coverage:** version exclusion and revision-reset behavior. Unknown context is a request to check, not a guessed match.
 
-## 7. A task-specific correction must retain its scope
+## 8. A task-specific correction must retain its scope
 
 **Status: illustrative user-instruction scenario.**
 
@@ -218,7 +282,7 @@ It does not infer "never rewrite any script in any project." If the user explici
 
 **Verification:** later edits preserve this task's original script; unrelated tasks retain their own permissions. A helper record cannot establish that the user's preference was actually saved by the host.
 
-## 8. A method succeeds once and later fails
+## 9. A method succeeds once and later fails
 
 **Status: illustrative lifecycle scenario.**
 
@@ -230,7 +294,7 @@ The agent diagnoses the changed conditions. A fresh success can revalidate it th
 
 **Test coverage:** failure exclusion, revalidation, event idempotency/conflicts, and supersession.
 
-## 9. Similar tasks in different projects need different methods
+## 10. Similar tasks in different projects need different methods
 
 **Status: illustrative project-isolation scenario.**
 
@@ -240,7 +304,7 @@ If a common method is genuinely useful, authorized sharing promotes a conditiona
 
 **Test coverage:** no cross-project lookup and copied-store rejection. This is not a claim that the host's own memories are automatically project-isolated by this helper.
 
-## 10. A clean process exit hides a wrong result
+## 11. A clean process exit hides a wrong result
 
 **Status: illustrative outcome-verification scenario.**
 

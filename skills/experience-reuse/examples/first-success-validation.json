@@ -1,0 +1,126 @@
+{
+  "case": "First verified success captured without failure or correction, then implicitly reused",
+  "observed_on": "2026-11-27",
+  "evidence_type": "Maintainer audit of real CLI tool events, first business success, A-created experience, frozen pre-B record, actual B read, saved results and independent arithmetic. Raw logs remain private.",
+  "fixture": "New project-local parcel-charge-summary skill 1.0.0 and synthetic offline manifests; no prior business run or seeded experience in the qualifying project.",
+  "qualifying_chain": {
+    "sessions": 2,
+    "resume_fork_or_chat_handoff": false,
+    "A_prompt_explicitly_names_new_domain_skill": true,
+    "A_prompt_names_experience_skill": false,
+    "A_prompt_requests_capture_or_corrects_failure": false,
+    "B_prompt_names_any_skill": false,
+    "B_prompt_contains_recipe_or_experience_path": false,
+    "B_prompt_contains_previous_work_cue": true,
+    "all_completed_terminal_commands_exit_zero": true,
+    "A_receipt_frozen_before_B": true
+  },
+  "observed_checks": {
+    "new_domain_skill_read_before_its_first_business_run": true,
+    "A_first_business_call_direct_success": true,
+    "A_all_completed_commands_exit_zero": true,
+    "A_no_user_correction_or_capture_reminder": true,
+    "A_experience_skill_loaded_after_success": true,
+    "A_created_reusable_record_with_conditions_and_evidence": true,
+    "B_independent_session_and_no_skill_name_recipe_or_record_path_in_prompt": true,
+    "B_experience_skill_load_before_A_record_read_before_business_call": true,
+    "B_all_completed_commands_exit_zero": true,
+    "A_and_B_results_independently_recomputed": true
+  },
+  "observed_event_order": {
+    "A_domain_skill_load_event": 6,
+    "A_first_success_event": 12,
+    "A_experience_load_event": 16,
+    "B_experience_load_event": 6,
+    "B_A_record_read_event": 16,
+    "B_first_business_event": 19
+  },
+  "actual_persistence_route": {
+    "owner": "Project task verification receipt",
+    "record": "results/batch_a.verification.json",
+    "section": "first_verified_success",
+    "evidence": "results/batch_a.report.json",
+    "structured_index_used": false,
+    "global_skill_rewritten_by_test_sessions": false
+  },
+  "retained_conditions": {
+    "skill_and_tool_version": "1.0.0",
+    "schema": "parcel.manifest/1",
+    "rate_card_id": "regional-2026-11",
+    "first_grams": 500,
+    "step_grams": 500,
+    "base": "4.80",
+    "extra": "2.35",
+    "currency": "CNY",
+    "revalidate_when": "Version, schema, rate card, status rules, calculation method, or environment changes; verify every new batch."
+  },
+  "results": {
+    "A": {
+      "dispatched_parcels": 3,
+      "total_grams": 2800,
+      "shipping_total": "21.45",
+      "excluded_cancelled": 1
+    },
+    "B": {
+      "dispatched_parcels": 4,
+      "total_grams": 5002,
+      "shipping_total": "38.00",
+      "excluded_cancelled": 1
+    }
+  },
+  "native_memory_cooperation": {
+    "recall_enabled": true,
+    "same_injected_summary": true,
+    "new_generation_enabled_for_test_invocations": false,
+    "generated_memory_files_edited": false
+  },
+  "billing": "Existing ChatGPT subscription login checked and forced; API environment keys/base URL removed; no API fallback or model/reasoning override.",
+  "preliminary_attempt": {
+    "qualifies": false,
+    "sessions": 1,
+    "business_first_call_success": true,
+    "experience_saved": true,
+    "reason": "One missing-output-directory preflight command returned nonzero.",
+    "targeted_change": "Precreate only an empty output directory in a new isolated project; no seeded experience/results or copied history; same task prompts.",
+    "usage": {
+      "input_tokens": 297964,
+      "cached_input_tokens": 257536,
+      "cache_write_input_tokens": 0,
+      "output_tokens": 2334,
+      "reasoning_output_tokens": 204,
+      "uncached_input_tokens": 40428,
+      "total_tokens": 300298
+    }
+  },
+  "secondary_usage_diagnostics": {
+    "qualifying_pair": {
+      "input_tokens": 433841,
+      "cached_input_tokens": 361472,
+      "uncached_input_tokens": 72369,
+      "output_tokens": 4877,
+      "total_tokens": 438718
+    },
+    "qualifying_model_calls": 11,
+    "all_request_sessions_including_preliminary": 3,
+    "all_request_usage": {
+      "input_tokens": 731805,
+      "cached_input_tokens": 619008,
+      "uncached_input_tokens": 112797,
+      "output_tokens": 7211,
+      "total_tokens": 739016
+    },
+    "scope": "CLI test sessions only; excludes parent preparation/audit. Cached input is included in input, not added again.",
+    "token_savings_claimed": false
+  },
+  "preservation": "Test-only CLI trust registrations removed by exact original-hash reconstruction; protected skill/instructions/inputs and final user configuration preserved.",
+  "limitations": [
+    "One qualifying two-session chain using a synthetic offline business task, not a reliability rate or live-site result.",
+    "CLI contexts, not Desktop new-chat coverage.",
+    "A was explicitly given the new domain skill path; neither task named Experience Reuse, and B named neither skill.",
+    "The new skill already supplied an intended method. The experience adds observed first-success conditions and evidence; no ablation proves it is the sole way to obtain the recipe.",
+    "Only the observed persistence route is tested. No claim for unexercised capture/find, global skill self-rewriting, universal interception, or formal rule promotion.",
+    "Usage excludes parent-conversation preparation/audit; no matched token-saving baseline.",
+    "Public English instructions adapt the tested local runtime; no additional model trial was run for publication."
+  ],
+  "verification_result": "passed_first_success_capture_and_fresh_session_reuse"
+}

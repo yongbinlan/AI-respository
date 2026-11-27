@@ -1,6 +1,6 @@
 interface:
   display_name: "Experience Reuse"
-  short_description: "Apply prior experience before repeating a named operation"
-  default_prompt: "Use $experience-reuse to find relevant project experience before acting, check its conditions, and capture useful new observations."
+  short_description: "Capture first success and reuse verified project experience"
+  default_prompt: "Use $experience-reuse to check prior project experience before acting and preserve the method, conditions, and evidence after a new skill first succeeds on a real task."
 policy:
   allow_implicit_invocation: true

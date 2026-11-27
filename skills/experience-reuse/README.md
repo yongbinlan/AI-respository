@@ -59,13 +59,14 @@ Keep one authoritative source per effective rule. Memory can retain a short poin
 
 ## Practical cases
 
-The first four cases below were observed during development, including a fresh-session catalog-path trial and a complete two-session discovery-to-reuse chain. The remaining cases are realistic usage examples, not measured production outcomes.
+The first five cases below were observed during development, including catalog-path reuse, a failure-recovery chain, and a first-success capture/reuse chain. The remaining cases are realistic usage examples, not measured production outcomes.
 
 | Case | What changes with the workflow | Evidence label |
 | --- | --- | --- |
 | **Wrong skill directory despite an explicit catalog path** | Use the supplied project catalog before guessing a user-level location. | Observed original omission; followed up by the fresh-session case below. |
 | **Automatic reuse in a fresh session without naming this skill** | Load the preflight, resolve the supplied catalog, and read the correct project file on the first target attempt. | Observed once in a fresh subscribed Codex CLI session; actual tool order and content checked. |
 | **New experience saved, then automatically reused in a fresh session** | A saves a verified method in its project task receipt; B loads the skill, reads that receipt, checks conditions, and succeeds on its first report call. | Observed two-session chain using an offline synthetic tool; project-receipt path, not the structured-index branch. |
+| **First success retained without any failure or correction** | A new skill succeeds directly, automatically saves method/conditions/evidence in its project receipt, and a fresh B session implicitly reads and adopts it. | One qualifying two-session synthetic CLI chain; all completed terminal commands returned zero; preliminary nonqualifying run disclosed. |
 | **Renaming the skill without breaking its entry points** | Update the invocation, folder, metadata, guidance, and tests together; retain the old storage key. | Observed configuration change; 17 isolated CLI tests passed afterward. |
 | A link works through reader A but reader B returns a page shell | Record page type, tool/version, access conditions, and a body/identity success check; prefer A only under matching conditions. | Illustrative; no live website claim. |
 | A previously valid command fails after a tool upgrade | Version mismatch excludes the old recipe and calls for a narrow recheck. | Illustrative scenario; exact-context exclusion is covered by helper tests. |
@@ -114,6 +115,12 @@ A separate [complete-loop test](references/casebook.md#3-a-new-lesson-saved-auto
 
 **Actual route: project receipt, not a new experience index or a user-level skill rewrite.** This observed one two-session chain with a synthetic local tool. It does not establish Desktop new-chat behavior, universal triggering, or structured `capture/find` reuse. See the [sanitized closed-loop summary](examples/closed-loop-validation.json) for evidence and limits.
 
+### Capture the first success too
+
+A newly created skill's first real, outcome-verified success is also a capture trigger. It does not need a preceding error, correction, repeat-work request, or user reminder. Keep the actual method, conditions, and evidence with its project/task owner; an existing complete receipt can serve as the experience source. Installation, syntax checks, and exit code zero alone do not establish successful task delivery.
+
+In the [first-success trial](references/casebook.md#4-first-success-captured-without-a-failure-or-correction-then-reused), A's first business call succeeded, and it loaded Experience Reuse afterward to write a `first_verified_success` receipt. A fresh B prompt named neither skill and gave no recipe or receipt path; B loaded the experience skill, read the saved observation, and verified a different batch. Both qualifying sessions had zero nonzero terminal commands. The actual route was the project receipt, with [sanitized evidence and the excluded preliminary run](examples/first-success-validation.json) disclosed.
+
 ## Explicit use and project records
 
 ```text
@@ -152,7 +159,7 @@ The 17 isolated CLI tests cover read-only empty queries, deduplication, event co
 
 The seven additional catalog-reader tests check supplied-root selection, missing-target behavior without fallback, alias/path rejection, actual file content, and read-only operation. All 24 tests passed on Windows for this portable package. Cross-platform runtime coverage remains unestablished.
 
-One fresh subscribed Codex CLI session also demonstrated automatic preflight loading and first-target catalog use without naming this skill. The separate two-session receipt-path chain also demonstrated discovery, automatic persistence, and fresh-session adoption. These are scoped model-behavior observations, separate from deterministic helper tests. Desktop new-chat selection and broad reliability remain untested. Token consumption increased in that trial; no savings are claimed.
+One fresh subscribed Codex CLI session also demonstrated automatic preflight loading and first-target catalog use without naming this skill. Separate two-session receipt-path chains demonstrated both recovery-derived experience and first-success experience being automatically saved and adopted in a fresh session. These are scoped model-behavior observations, separate from deterministic helper tests. Desktop new-chat selection and broad reliability remain untested. Token consumption increased in that trial; no savings are claimed.
 Retrieval uses keywords and exact context, not embeddings. File existence is not proof of a real-world result. Privacy screening is limited. Text instructions and optional routing do not universally intercept tool calls. Existing professional and human-review gates still apply.
 
 Evaluate experience reuse by whether the relevant method is found, checked, applied before the action, and successful. Use fresh comparable tasks to measure repeated errors and delivery quality. Calls, latency, and tokens, including capture/retrieval costs, are secondary tradeoffs; successful reuse does not imply savings.
@@ -169,3 +176,5 @@ Evaluate experience reuse by whether the relevant method is found, checked, appl
 - [Fresh-session validation](examples/fresh-session-validation.json): sanitized maintainer-audited evidence and its limits.
 
 - [Closed-loop validation](examples/closed-loop-validation.json): new experience saved in a project receipt and automatically reused in a fresh session.
+
+- [First-success validation](examples/first-success-validation.json): directly successful new skill, automatic conditional capture, and implicit fresh-session reuse.

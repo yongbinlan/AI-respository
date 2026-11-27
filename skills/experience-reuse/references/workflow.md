@@ -1,6 +1,6 @@
 # Experience workflow
 
-Read this when the exact-catalog short path does not apply, or when capturing, reviewing, or promoting experience. Trigger rules live in [SKILL.md](../SKILL.md).
+Read this when the exact-catalog short path does not apply, or when capturing a new skill's first verified success, reviewing, or promoting experience. Trigger rules live in [SKILL.md](../SKILL.md).
 
 
 1. **Locate the authority.** Start with the current instructions, exact supplied paths, injected native-memory pointers, original task state, and existing project indexes. Use an explicit path before guessing a conventional location. Missing recalled history does not prove there is no history; do not scan every conversation or unrelated project.
@@ -9,6 +9,16 @@ Read this when the exact-catalog short path does not apply, or when capturing, r
 4. **Apply and verify.** Prefer a method whose conditions match. Judge success by the requested business outcome, not process exit or an agent's assertion. Reuse deterministic checks where the original workflow provides them. This text and the index do not intercept other tools. Avoid repeating the same failed action under unchanged conditions; changed conditions may justify a narrow probe.
 5. **Maintain the owning record.** Update an existing task/incident/experience source first. Use `authority_ref` for a lightweight pointer instead of copying its procedure. Only when there is no appropriate owner, capture a concise project method in `.codex/praxis-nexus/experiences.json`. Merge matching patterns, record actual adoption separately, and mark failed methods for review.
 6. **Consolidate selectively.** Put stable methods into the relevant skill's reference, configuration, or script. Preserve the project's existing promotion/review gates. Do not invent a success-count threshold as approval. One evidenced success can become a conditional candidate immediately; never repeat a known mistake just to accumulate observations.
+
+## First verified success
+
+After a newly created skill first completes a real task and passes the required outcome checks, automatically preserve its first evidenced successful sample before closing the task. This also applies when no error, correction, or previous-work cue occurred. Do not wait for the next task to reconstruct it. Installation, scaffolding, syntax validation, or exit code zero alone is insufficient; if necessary outcome checks are missing, retain the real status and verification gap instead.
+
+- **Retain:** skill identity and identifiable version, task goal, relevant input/environment conditions, actual command or method adopted, outcome checks, evidence/artifact pointers, and conditions that call for revalidation. Distinguish checked execution from pending user review; one success does not establish all-input validity.
+- **Own it locally:** prefer the task/project's existing authoritative receipt or experience record, making the method and evidence discoverable through normal project retrieval. If that source already covers the observation, reference or reuse it rather than making another copy. Use the project index only when there is no suitable owner. Do not accumulate every project's first-run history in the user-level SKILL.md.
+- **Reuse conditionally:** in the next related task, read the original source, compare the current version/input/environment, apply the method, and verify the new result. Stable general steps may later improve their owning professional skill under its existing rules. A first successful observation does not grant cross-project authority, formal promotion, or publication approval.
+
+Keep only necessary methods and evidence references; do not copy private chats, credentials, or raw private data. Native memory remains subject to the host's supported protocol; this branch does not edit generated memory files.
 
 ## Native memory and ownership
 
